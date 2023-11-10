@@ -1,5 +1,10 @@
 {
   "dependencies": {
+<<<<<<< HEAD
     "express": "^4.18.2"
+=======
+    "express": "^4.18.2",
+    "node": "^21.1.0"
+>>>>>>> 23662ea48fc0d1317f61b5c7bffe561d6f953915
   }
 }
