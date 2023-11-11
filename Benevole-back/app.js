@@ -8,7 +8,7 @@ const benevoleRoutes = require('./routes/benevole');
 const animationRoutes = require('./routes/animation');
 const typeStandRoutes = require('./routes/type_stand');
 const jeuxRoutes = require('./routes/jeux');
-const standRoutes = require('./routes/stands');
+const standsRoutes = require('./routes/stands');
 const zoneRoutes = require('./routes/zone');
 const accueilRoutes = require('./routes/accueil');
 
@@ -17,7 +17,7 @@ const app = express();
 mongoose.connect(process.env.DB_URI,
     { useNewUrlParser: true, useUnifiedTopology: true })
     .then(() => console.log('Connexion à MongoDB réussie !'))
-    .catch(() => console.log('Connexion à MongoDB échouée !'));
+    .catch(() => console.log('Connexion à MongoDB échouée...'));
 
 app.use(cors());
 app.use(bodyParser.json());
@@ -39,7 +39,7 @@ app.use('/benevole', benevoleRoutes);
 app.use('/animation', animationRoutes);
 app.use('/type_stand', typeStandRoutes);
 app.use('/jeux', jeuxRoutes);
-app.use('/stand', standRoutes);
+app.use('/stands', standsRoutes);
 app.use('/zone', zoneRoutes);
 app.use('/accueil', accueilRoutes);
 
