@@ -1,15 +1,16 @@
 const mongoose = require('mongoose');
+const Benevole = require('./benevole');
 
 const accueilSchema =  mongoose.Schema({
     num_accueil: { type: Number, required: true, unique: true },
     description : { type: String, required: true },
     referents: [{
-        type: Schema.Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: 'Benevole', // Référence au modèle Benevole
         required: true
     }],
     liste_benevole: [{
-        type: Schema.Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: 'Benevole', // Référence au modèle Benevole
         required: true
     }],

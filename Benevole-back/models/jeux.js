@@ -4,7 +4,7 @@ const jeuSchema = mongoose.Schema({
     nom_jeu: { type: String, required: true },
     editeur: { type: String, required: true, unique: true },
     niveau: { type: String, required: true },
-    recu: { type: Bool, required: true},
+    recu: { type: Boolean, required: true},
 });
 
 
