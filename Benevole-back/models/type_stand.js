@@ -1,8 +1,8 @@
 const mongoose = require('mongoose');
 
 const typeStandSchema = mongoose.Schema({
-    nom_stand: String,
-    description: String,
+    nom_stand: { type: String, required: true, unique: true},
+    description: { type: String, required: true },
 });
 
 
