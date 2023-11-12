@@ -14,25 +14,24 @@ const accueilRoutes = require('./routes/accueil');
 
 const app = express();
 
-mongoose.connect(process.env.DB_URI,
+mongoose.connect(process.env.DATABASE_URL,
     { useNewUrlParser: true, useUnifiedTopology: true })
     .then(() => console.log('Connexion à MongoDB réussie !'))
     .catch(() => console.log('Connexion à MongoDB échouée...'));
 
 app.use(cors());
 app.use(bodyParser.json());
+app.use(express.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.get('/', (req, res) => {
+    res.status(200).json({ message: 'Connected!' });
+});
 
 app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*'); // Accès à l'API depuis n'importe quelle origine
     res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content, Accept, Content-Type, Authorization'); // Ajout des headers mentionnés aux requêtes envoyées vers notre API
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS'); // Envoi de requêtes avec les méthodes mentionnées
     next();
-});
-
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.get('/', (req, res) => {
-    res.status(200).json({ message: 'Connected!' });
 });
 
 app.use('/benevole', benevoleRoutes);
