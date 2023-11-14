@@ -12,7 +12,7 @@ exports.createBenevole = (req, res, next) => {
         taille_tshirt : req.body.taille_tshirt,
         vegetarien : req.body.vegetarien,
         mail : req.body.mail,
-        hébergement : req.body.hébergement,
+        hebergement : req.body.hébergement,
     });
     benevole.save()
     .then(() => {res.status(201).json({message: 'Benevole créé !'})})
@@ -38,7 +38,7 @@ exports.modifyBenevole = (req, res, next) => {
         taille_tshirt : req.body.taille_tshirt,
         vegetarien : req.body.vegetarien,
         mail : req.body.mail,
-        hébergement : req.body.hébergement,
+        hebergement : req.body.hébergement,
     });
     Benevole.updateOne({_id: req.params.id}, benevole)
     .then(() => {res.status(201).json({message: 'Benevole modifié !'})})
