@@ -1,12 +1,12 @@
 const express = require('express');
 const router = express.Router();
 
-const animationCtrl = require('../controllers/animation');
+const animationCtrl = require('../controllers/benevole');
 
-router.post('/', animationCtrl.createAnimation);
-router.get('/:id', animationCtrl.getOneAnimation);
-router.get('/', animationCtrl.getAllAnimation);
-router.put('/:id', animationCtrl.modifyAnimation);
-router.delete('/:id', animationCtrl.deleteAnimation);
+router.post('/', animationCtrl.createBenevole);
+router.get('/:id', animationCtrl.getOneBenevole);
+router.put('/:id', animationCtrl.modifyBenevole);
+router.delete('/:id', animationCtrl.deleteBenevole);
+router.get('/', animationCtrl.getAllBenevole);
 
 module.exports = router;
