@@ -1,3 +1,4 @@
+const benevole = require('../models/benevole');
 const Benevole = require('../models/benevole');
 
 exports.createBenevole = (req, res, next) => {
@@ -59,6 +60,9 @@ exports.getAllBenevole = (req, res, next) => {
 
 
 exports.getAllBenevoleReferent = (req, res, next) => {
+    //console.log(benevole.find({}))
+
+
     Benevole.find({referent: true})
     .then((benevoles) => {res.status(200).json(benevoles)})
     .catch((error) => {res.status(400).json({error: error})})
