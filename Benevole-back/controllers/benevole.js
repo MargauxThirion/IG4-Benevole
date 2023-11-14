@@ -56,3 +56,10 @@ exports.getAllBenevole = (req, res, next) => {
     .then((benevoles) => {res.status(200).json(benevoles)})
     .catch((error) => {res.status(400).json({error: error})})
 };
+
+
+exports.getAllBenevoleReferent = (req, res, next) => {
+    Benevole.find({referent: true})
+    .then((benevoles) => {res.status(200).json(benevoles)})
+    .catch((error) => {res.status(400).json({error: error})})
+};
