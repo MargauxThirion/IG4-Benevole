@@ -1,13 +1,13 @@
 const express = require('express');
 const router = express.Router();
 
-const animationCtrl = require('../controllers/benevole');
+const benevoleCtrl = require('../controllers/benevole');
 
-router.post('/', animationCtrl.createBenevole);
-router.get('/:id', animationCtrl.getOneBenevole);
-router.put('/:id', animationCtrl.modifyBenevole);
-router.delete('/:id', animationCtrl.deleteBenevole);
-router.get('/', animationCtrl.getAllBenevole);
-router.get('/referent', animationCtrl.getAllReferent);
+router.post('/', benevoleCtrl.createBenevole);
+router.get('/:id', benevoleCtrl.getOneBenevole);
+router.put('/:id', benevoleCtrl.modifyBenevole);
+router.delete('/:id', benevoleCtrl.deleteBenevole);
+router.get('/', benevoleCtrl.getAllBenevole);
+router.get('/referent', benevoleCtrl.getAllBenevoleReferent);
 
 module.exports = router;
