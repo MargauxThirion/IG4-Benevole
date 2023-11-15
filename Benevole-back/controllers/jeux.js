@@ -2,10 +2,11 @@ const Jeux = require('../models/jeux');
 
 exports.createJeux = (req, res, next) => {
     const jeux = new Jeux({
-        nom: req.body.nom,
-        description: req.body.description,
-        nb_benevole: req.body.nb_benevole,
-        horaire: req.body.horaire,
+        nom_jeu: req.body.nom_jeu,
+        editeur: req.body.editeur,
+        niveau: req.body.niveau,
+        recu: req.body.recu,
+        lien: req.body.lien,
     });
     jeux.save()
     .then(() => {res.status(201).json({message: 'Jeux créé !'})})
@@ -20,11 +21,11 @@ exports.getOneJeux = (req, res, next) => {
 
 exports.modifyJeux = (req, res, next) => {
     const jeux = new Jeux({
-        _id: req.params.id,
-        nom: req.body.nom,
-        description: req.body.description,
-        nb_benevole: req.body.nb_benevole,
-        horaire: req.body.horaire,
+        nom_jeu: req.body.nom_jeu,
+        editeur: req.body.editeur,
+        niveau: req.body.niveau,
+        recu: req.body.recu,
+        lien: req.body.lien,
     });
     Jeux.updateOne({_id: req.params.id}, jeux)
     .then(() => {res.status(201).json({message: 'Jeux modifié !'})})

@@ -5,6 +5,7 @@ const jeuSchema = mongoose.Schema({
     editeur: { type: String, required: true, unique: true },
     niveau: { type: String, required: true },
     recu: { type: Boolean, required: true},
+    lien: { type: String},
 });
 
 

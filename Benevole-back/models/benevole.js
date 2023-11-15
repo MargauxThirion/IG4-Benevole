@@ -12,6 +12,8 @@ const benevoleSchema = mongoose.Schema({
     vegetarien: { type: Boolean, required: true},
     mail : { type: String, required: true },
     hebergement: { type: String},
+    addresse: { type: String},
+    num_telephone : { type: String},
 });
 
 module.exports = mongoose.model('Benevole', benevoleSchema);

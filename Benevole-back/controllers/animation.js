@@ -2,8 +2,6 @@ const Animation = require('../models/animation');
 
 exports.createAnimation = (req, res, next) => {
     const animation = new Animation({
-        referents: req.body.referents,
-        liste_benevole: req.body.liste_benevole,
         nb_benevole: req.body.nb_benevole,
         zone: req.body.zone,
         horaire: req.body.horaire,
@@ -22,8 +20,6 @@ exports.getOneAnimation = (req, res, next) => {
 exports.modifyAnimation = (req, res, next) => {
     const animation = new Animation({
         _id: req.params.id,
-        referents: req.body.referents,
-        liste_benevole: req.body.liste_benevole,
         nb_benevole: req.body.nb_benevole,
         zone: req.body.zone,
         horaire: req.body.horaire,
