@@ -7,7 +7,7 @@ const benevoleSchema = mongoose.Schema({
     prenom: { type: String, required: true },
     password : { type: String, required: true, unique: true },
     pseudo: { type: String, required: true, unique: true },
-    association: { type: String },
+    association: { type: String, required: true },
     taille_tshirt: { type: String, required: true },
     vegetarien: { type: Boolean, required: true},
     mail : { type: String, required: true },

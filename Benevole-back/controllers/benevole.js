@@ -1,4 +1,3 @@
-const benevole = require('../models/benevole');
 const Benevole = require('../models/benevole');
 
 exports.createBenevole = (req, res, next) => {
@@ -14,6 +13,8 @@ exports.createBenevole = (req, res, next) => {
         vegetarien : req.body.vegetarien,
         mail : req.body.mail,
         hebergement : req.body.hébergement,
+        addresse: req.body.addresse,
+        num_telephone : req.body.num_telephone,
     });
     benevole.save()
     .then(() => {res.status(201).json({message: 'Benevole créé !'})})
@@ -40,6 +41,8 @@ exports.modifyBenevole = (req, res, next) => {
         vegetarien : req.body.vegetarien,
         mail : req.body.mail,
         hebergement : req.body.hébergement,
+        addresse: req.body.addresse,
+        num_telephone : req.body.num_telephone,
     });
     Benevole.updateOne({_id: req.params.id}, benevole)
     .then(() => {res.status(201).json({message: 'Benevole modifié !'})})
