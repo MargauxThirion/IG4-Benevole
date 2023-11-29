@@ -1,8 +1,8 @@
 const mongoose = require('mongoose');
 
 const benevoleSchema = mongoose.Schema({
-    admin: { type: Boolean, required: true, default: false },
-    referent: { type: Boolean, required: true, default: false },
+    admin: { type: Boolean, default: false },
+    referent: { type: Boolean, default: false },
     nom: { type: String, required: true },
     prenom: { type: String, required: true },
     password : { type: String, required: true},
@@ -12,7 +12,7 @@ const benevoleSchema = mongoose.Schema({
     vegetarien: { type: Boolean, required: true},
     mail : { type: String, required: true },
     hebergement: { type: String},
-    addresse: { type: String},
+    adresse: { type: String},
     num_telephone : { type: String},
 });
 
