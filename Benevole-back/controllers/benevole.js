@@ -63,8 +63,6 @@ exports.getAllBenevole = (req, res, next) => {
 
 
 exports.getAllBenevoleReferent = (req, res, next) => {
-    //console.log(benevole.find({}))
-
 
     Benevole.find({referent: true})
     .then((benevoles) => {res.status(200).json(benevoles)})
