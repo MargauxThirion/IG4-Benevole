@@ -12,11 +12,12 @@ exports.createBenevole = (req, res, next) => {
         taille_tshirt : req.body.taille_tshirt,
         vegetarien : req.body.vegetarien,
         mail : req.body.mail,
-        hebergement : req.body.hébergement,
+        hebergement : req.body.hebergement,
         addresse: req.body.addresse,
         num_telephone : req.body.num_telephone,
     });
     benevole.save()
+    console.log(req.body)
     .then(() => {res.status(201).json({message: 'Benevole créé !'})})
     .catch((error) => {res.status(400).json({error: error})})
 };
@@ -40,7 +41,7 @@ exports.modifyBenevole = (req, res, next) => {
         taille_tshirt : req.body.taille_tshirt,
         vegetarien : req.body.vegetarien,
         mail : req.body.mail,
-        hebergement : req.body.hébergement,
+        hebergement : req.body.hebergement,
         addresse: req.body.addresse,
         num_telephone : req.body.num_telephone,
     });
