@@ -12,7 +12,7 @@ const benevoleSchema = mongoose.Schema({
     vegetarien: { type: Boolean, required: true},
     mail : { type: String, required: true },
     hebergement: { type: String},
-    addresse: { type: String},
+    adresse: { type: String},
     num_telephone : { type: String},
 });
 

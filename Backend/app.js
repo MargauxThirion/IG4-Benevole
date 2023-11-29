@@ -20,12 +20,9 @@ mongoose.connect(process.env.DATABASE_URL,
     .catch(() => console.log('Connexion à MongoDB échouée...'));
 
 app.use(cors());
-app.use(bodyParser.json());
-app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.get('/', (req, res) => {
-    res.status(200).json({ message: 'Connected!' });
-});
+app.use(bodyParser.json());
+app.use(express.json()); 
 
 app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*'); // Accès à l'API depuis n'importe quelle origine
