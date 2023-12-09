@@ -52,8 +52,6 @@ exports.getAllBenevoleReferent = (req, res, next) => {
     .catch((error) => {res.status(400).json({error: error})})
 };
 
-
-
 // Fonction d'inscription d'un nouvel utilisateur
 async function signup(req, res) {
   try {
@@ -68,14 +66,20 @@ async function signup(req, res) {
     // Crypter le mot de passe
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Créer un nouvel utilisateur
-    const newBenevole = await Benevole.create({ pseudo, password: hashedPassword, mail, nom, prenom, admin, referent, association, hebergement, vegetarien, taille_tshirt, adresse, num_telephone });
+    // Créer un nouvel utilisateur avec la logique conditionnelle pour l'adresse
+    let newBenevole;
+    if (hebergement === 'proposition') {
+      newBenevole = await Benevole.create({ pseudo, password: hashedPassword, mail, nom, prenom, admin, referent, association, hebergement, vegetarien, taille_tshirt, adresse, num_telephone});
+    } else {
+      newBenevole = await Benevole.create({ pseudo, password: hashedPassword, mail, nom, prenom, admin, referent, association, hebergement, vegetarien, taille_tshirt, num_telephone});
+    }
 
     res.status(201).json({ message: 'Inscription réussie', benevole: newBenevole });
   } catch (error) {
     res.status(500).json({ message: 'Une erreur s\'est produite lors de l\'inscription', error });
   }
 }
+
 
 // Fonction de connexion de l'utilisateur
 async function login(req, res) {
