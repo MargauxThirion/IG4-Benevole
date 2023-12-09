@@ -12,10 +12,12 @@ const standsSchema =  mongoose.Schema({
         ref: 'Benevole', // Référence au modèle Benevole
         required: false
     }],
-    nb_benevole: { type: Number, required: true },
     nom_stand: { type: String, required: true },
-    description: { type: String, required: false },
-    horaire: { type: String, required: false },
+    description: { type: String, required: true },
+    horaireCota: [{
+        heure: { type: String, required: true },
+        nb_benevole: { type: Number, required: true }
+      }]
 });
 
 module.exports = mongoose.model('Stands', standsSchema);

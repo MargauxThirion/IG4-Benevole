@@ -1,13 +1,17 @@
 const Stands = require('../models/stands');
 
 exports.createStands = (req, res, next) => {
+    const { referents, nom_stand, description, categorie, horaireCota } = req.body;
+
     const stands = new Stands({
-        referents: req.body.referents,
-        nom_stand: req.body.nom_stand,
-        description: req.body.description,
-        nb_benevole: req.body.nb_benevole,
-        categorie: req.body.categorie,
-        horaire: req.body.horaire,
+        referents,
+        nom_stand,
+        description,
+        categorie,
+        horaireCota:horaireCota.map(item => ({
+            heure: item.heure,
+            nb_benevole: item.nb_benevole
+        }))
     });
     stands.save()
     .then(() => {res.status(201).json({message: 'Stands créé !'})})
@@ -26,9 +30,11 @@ exports.modifyStands = (req, res, next) => {
         referents: req.body.referents,
         nom_stand: req.body.nom_stand,
         description: req.body.description,
-        nb_benevole: req.body.nb_benevole,
         categorie: req.body.categorie,
-        horaire: req.body.horaire,
+        horaireCota: [{
+            heure: req.body.heure,
+            nb_benevole: req.body.nb_benevole
+        }]
     });
     Stands.updateOne({_id: req.params.id}, stands)
     .then(() => {res.status(201).json({message: 'Stands modifié !'})})
