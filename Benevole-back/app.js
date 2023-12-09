@@ -6,7 +6,6 @@ const mongoose = require('mongoose');
 
 const benevoleRoutes = require('./routes/benevole');
 const animationRoutes = require('./routes/animation');
-const typeStandRoutes = require('./routes/type_stand');
 const jeuxRoutes = require('./routes/jeux');
 const standsRoutes = require('./routes/stands');
 const zoneRoutes = require('./routes/zone');
@@ -33,7 +32,6 @@ app.use((req, res, next) => {
 
 app.use('/benevole', benevoleRoutes);
 app.use('/animation', animationRoutes);
-app.use('/type_stand', typeStandRoutes);
 app.use('/jeux', jeuxRoutes);
 app.use('/stands', standsRoutes);
 app.use('/zone', zoneRoutes);

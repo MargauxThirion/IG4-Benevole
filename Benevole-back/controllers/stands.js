@@ -3,6 +3,8 @@ const Stands = require('../models/stands');
 exports.createStands = (req, res, next) => {
     const stands = new Stands({
         referents: req.body.referents,
+        nom_stand: req.body.nom_stand,
+        description: req.body.description,
         nb_benevole: req.body.nb_benevole,
         categorie: req.body.categorie,
         horaire: req.body.horaire,
@@ -22,6 +24,8 @@ exports.modifyStands = (req, res, next) => {
     const stands = new Stands({
         _id: req.params.id,
         referents: req.body.referents,
+        nom_stand: req.body.nom_stand,
+        description: req.body.description,
         nb_benevole: req.body.nb_benevole,
         categorie: req.body.categorie,
         horaire: req.body.horaire,
