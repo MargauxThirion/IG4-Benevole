@@ -11,7 +11,7 @@ const benevoleSchema = mongoose.Schema({
     taille_tshirt: { type: String, required: true },
     vegetarien: { type: Boolean, required: true},
     mail : { type: String, required: true },
-    hebergement: { type: String},
+    hebergement: { type: String, required: true},
     adresse: { type: String},
     num_telephone : { type: String},
 });
