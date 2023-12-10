@@ -9,8 +9,13 @@ async function modifyBenevole(req, res) {
 
     // Gérez le champ 'vegetarien'
     if ('vegetarien' in benevoleUpdates) {
-      benevoleUpdates.vegetarien = benevoleUpdates.vegetarien.toLowerCase() === 'oui';
+      if (typeof benevoleUpdates.vegetarien === 'string') {
+        benevoleUpdates.vegetarien = benevoleUpdates.vegetarien.toLowerCase() === 'oui';
+      } else if (typeof benevoleUpdates.vegetarien === 'boolean') {
+        // Ne faites rien ici, car la valeur est déjà un booléen
+      }
     }
+    
 
     // Utilisez le pseudo pour mettre à jour le bénévole
     const updatedBenevole = await Benevole.findOneAndUpdate(
