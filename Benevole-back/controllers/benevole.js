@@ -2,36 +2,35 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const Benevole = require('../models/benevole');
 
-exports.modifyBenevole = (req, res, next) => {
-    const benevole = new Benevole({
-        mail: req.body.mail,
-        password: req.body.password,
-        pseudo: req.body.pseudo,
-        nom: req.body.nom,
-        prenom: req.body.prenom,
-        admin: req.body.admin,
-        referent: req.body.referent,
-        association: req.body.association,
-        hebergement: req.body.hebergement,
-        vegetarien: req.body.vegetarien,
-        taille_tshirt: req.body.taille_tshirt,
-        adresse: req.body.adresse,
-        num_telephone: req.body.num_telephone,
-    });
-    Benevole.updateOne({_id: req.params.id}, benevole).then(
-      () => {
-        res.status(201).json({
-          message: "Bénévole modifié!"
-        });
-      }
-    ).catch(
-      (error) => {
-        res.status(400).json({
-          error: error
-        });
-      }
+async function modifyBenevole(req, res) {
+  try {
+    const { pseudo } = req.params;
+    const benevoleUpdates = req.body;
+
+    // Gérez le champ 'vegetarien'
+    if ('vegetarien' in benevoleUpdates) {
+      benevoleUpdates.vegetarien = benevoleUpdates.vegetarien.toLowerCase() === 'oui';
+    }
+
+    // Utilisez le pseudo pour mettre à jour le bénévole
+    const updatedBenevole = await Benevole.findOneAndUpdate(
+      { pseudo },
+      benevoleUpdates,
+      { new: true }
     );
-  };
+
+    if (!updatedBenevole) {
+      return res.status(404).json({ message: 'Bénévole non trouvé' });
+    }
+
+    res.status(200).json({ message: 'Bénévole modifié!', benevole: updatedBenevole });
+  } catch (error) {
+    console.error('Une erreur s\'est produite lors de la modification du bénévole', error);
+    res.status(500).json({ error: 'Une erreur s\'est produite lors de la modification du bénévole' });
+  }
+};
+
+
 
 exports.deleteBenevole = (req, res, next) => {
     Benevole.deleteOne({_id: req.params.id})
@@ -124,4 +123,4 @@ async function getBenevole(req, res) {
   }
 }
 
-module.exports = { signup, login, getBenevole };
+module.exports = { signup, login, getBenevole, modifyBenevole };

@@ -18,10 +18,10 @@ function authMiddleware(req, res, next) {
 
     // Vérifier si l'e-mail est présent dans le token décodé
     if (!decoded.pseudo) {
-      return res.status(401).json({ message: 'Token d\'authentification invalide - email manquant' });
+      return res.status(401).json({ message: 'Token d\'authentification invalide - pseudo manquant' });
     }
 
-    // Ajouter l'e-mail de l'utilisateur décodé à l'objet de requête
+    // Ajouter le pseudo de l'utilisateur décodé à l'objet de requête
     req.benevolePseudo = decoded.pseudo;
     console.log(decoded);
 

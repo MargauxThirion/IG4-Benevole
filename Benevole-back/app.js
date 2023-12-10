@@ -19,8 +19,6 @@ mongoose.connect(process.env.DATABASE_URL,
     .catch(() => console.log('Connexion à MongoDB échouée...'));
 
 app.use(cors());
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
 app.use(express.json()); 
 
 app.use((req, res, next) => {
