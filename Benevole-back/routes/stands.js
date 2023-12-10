@@ -7,6 +7,7 @@ router.post('/', standCtrl.createStands);
 router.get('/:id', standCtrl.getOneStands);
 router.get('/', standCtrl.getAllStands);
 router.put('/:id', standCtrl.modifyStands);
+router.put('/:idStand/:idHoraire/:idBenevole', standCtrl.addBenevoleToHoraire);
 router.delete('/:id', standCtrl.deleteStands);
 
 module.exports = router;

@@ -7,16 +7,16 @@ const standsSchema =  mongoose.Schema({
         ref: 'Benevole', // Référence au modèle Benevole
         required: false
     }],
-    liste_benevole: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Benevole', // Référence au modèle Benevole
-        required: false
-    }],
     nom_stand: { type: String, required: true },
     description: { type: String, required: true },
     horaireCota: [{
         heure: { type: String, required: true },
-        nb_benevole: { type: Number, required: true }
+        nb_benevole: { type: Number, required: true },
+        liste_benevole: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Benevole', // Référence au modèle Benevole
+            required: false
+        }]
       }]
 });
 

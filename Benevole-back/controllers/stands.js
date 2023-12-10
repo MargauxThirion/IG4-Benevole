@@ -1,22 +1,27 @@
 const Stands = require('../models/stands');
-
 exports.createStands = (req, res, next) => {
-    const { referents, nom_stand, description, categorie, horaireCota } = req.body;
+    const { referents, nom_stand, description, horaireCota } = req.body;
 
     const stands = new Stands({
         referents,
         nom_stand,
         description,
-        categorie,
-        horaireCota:horaireCota.map(item => ({
+        horaireCota: horaireCota.map(item => ({
             heure: item.heure,
-            nb_benevole: item.nb_benevole
+            nb_benevole: item.nb_benevole,
+            liste_benevole: [] // Initialiser liste_benevole à un tableau vide pour chaque horaire
         }))
     });
+
     stands.save()
-    .then(() => {res.status(201).json({message: 'Stands créé !'})})
-    .catch((error) => {res.status(400).json({error: error})})
+    .then(() => {
+        res.status(201).json({ message: 'Stands créé !' });
+    })
+    .catch((error) => {
+        res.status(400).json({ error: error });
+    });
 };
+
 
 exports.getOneStands = (req, res, next) => {
     Stands.findOne({_id: req.params.id})
@@ -30,10 +35,10 @@ exports.modifyStands = (req, res, next) => {
         referents: req.body.referents,
         nom_stand: req.body.nom_stand,
         description: req.body.description,
-        categorie: req.body.categorie,
         horaireCota: [{
             heure: req.body.heure,
-            nb_benevole: req.body.nb_benevole
+            nb_benevole: req.body.nb_benevole,
+            liste_benevole: []
         }]
     });
     Stands.updateOne({_id: req.params.id}, stands)
@@ -51,4 +56,22 @@ exports.getAllStands = (req, res, next) => {
     Stands.find()
     .then((standss) => {res.status(200).json(standss)})
     .catch((error) => {res.status(400).json({error: error})})
+};
+
+exports.addBenevoleToHoraire = (req, res, next) => {
+    const { idHoraire, idBenevole } = req.params; // Identifiant de l'horaire et du bénévole
+    Stands.findOneAndUpdate(
+        { "horaireCota._id": idHoraire }, // Recherche de l'horaire spécifique dans la collection
+        { $addToSet: { "horaireCota.$.liste_benevole": idBenevole } }, // Ajout du bénévole à liste_benevole de cet horaire
+        { new: true }
+    )
+    .then((stand) => {
+        if (!stand) {
+            return res.status(404).json({ message: 'Horaire non trouvé' });
+        }
+        res.status(200).json({ message: 'Bénévole ajouté à l\'horaire avec succès' });
+    })
+    .catch((error) => {
+        res.status(400).json({ error: error });
+    });
 };

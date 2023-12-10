@@ -8,6 +8,7 @@ router.post('/signup', benevoleCtrl.signup);
 router.post('/login', benevoleCtrl.login);
 router.get('/:pseudo', benevoleCtrl.getBenevole);
 router.put('/:pseudo', benevoleCtrl.modifyBenevole);
+router.get('/id/:id', benevoleCtrl.getBenevoleById);
 // router.delete('/:id', benevoleCtrl.deleteBenevole);
 //router.get('/referent', benevoleCtrl.getAllBenevoleReferent);
 //router.get('/', benevoleCtrl.getAllBenevole);

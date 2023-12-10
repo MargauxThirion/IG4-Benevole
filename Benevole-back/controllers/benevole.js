@@ -123,4 +123,23 @@ async function getBenevole(req, res) {
   }
 }
 
-module.exports = { signup, login, getBenevole, modifyBenevole };
+async function getBenevoleById(req, res) {
+  try {
+    const benevoleId = req.params.id; // Récupérer l'ID du bénévole depuis les paramètres de la requête
+
+    // Rechercher le bénévole dans la base de données en utilisant son ID
+    const benevole = await Benevole.findById(benevoleId);
+    if (!benevole) {
+      return res.status(404).json({ message: 'Bénévole non trouvé' });
+    }
+
+    const pseudo = benevole.pseudo; // Récupérer le pseudo du bénévole
+
+    res.json({ pseudo });
+  } catch (error) {
+    res.status(500).json({ message: 'Une erreur s\'est produite lors de la récupération du pseudo du bénévole', error });
+  }
+}
+
+
+module.exports = { signup, login, getBenevole, modifyBenevole, getBenevoleById };
