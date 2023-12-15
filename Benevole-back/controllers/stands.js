@@ -1,4 +1,5 @@
 const Stands = require('../models/stands');
+const Benevole = require('../models/benevole');
 exports.createStands = (req, res, next) => {
     const { referents, nom_stand, description, horaireCota } = req.body;
 
@@ -66,6 +67,7 @@ exports.getAllStands = (req, res, next) => {
 
 exports.addBenevoleToHoraire = (req, res, next) => {
     const { idHoraire, idBenevole } = req.params; // Identifiant de l'horaire et du bénévole
+    
     Stands.findOneAndUpdate(
         { "horaireCota._id": idHoraire }, // Recherche de l'horaire spécifique dans la collection
         { $addToSet: { "horaireCota.$.liste_benevole": idBenevole } }, // Ajout du bénévole à liste_benevole de cet horaire
@@ -79,5 +81,41 @@ exports.addBenevoleToHoraire = (req, res, next) => {
     })
     .catch((error) => {
         res.status(400).json({ error: error });
+    });
+};
+
+exports.addReferentToStand = (req, res, next) => {
+    const { idStand, idBenevole } = req.params;
+
+    // Vérifiez d'abord si le bénévole existe
+    Benevole.findById(idBenevole)
+    .then(benevole => {
+        if (!benevole) {
+            throw new Error('Bénévole non trouvé');
+        }
+        // Si le bénévole existe, mettez à jour le stand et le bénévole
+        return Stands.findOneAndUpdate(
+            { "_id": idStand },
+            { $addToSet: { "referents": idBenevole } },
+            { new: true, runValidators: true }
+        ).then(stand => {
+            if (!stand) {
+                throw new Error('Stand non trouvé');
+            }
+            // Mise à jour du statut de référent du bénévole
+            return Benevole.findOneAndUpdate(
+                { "_id": idBenevole },
+                { $set: { "referent": true } },
+                { new: true, runValidators: true }
+            ).then(() => {
+                return stand;
+            });
+        });
+    })
+    .then(stand => {
+        res.status(200).json({ message: 'Référent ajouté au stand avec succès', stand: stand });
+    })
+    .catch(error => {
+        res.status(400).json({ error: error.message });
     });
 };

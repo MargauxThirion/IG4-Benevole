@@ -146,5 +146,16 @@ async function getBenevoleById(req, res) {
   }
 }
 
+async function getNonReferentBenevoles (req, res) {
+  try {
+      // Trouver tous les bénévoles qui ne sont pas référents
+      const nonReferentBenevoles = await Benevole.find({ referent: false }).select('pseudo');
+      res.status(200).json(nonReferentBenevoles);
+  } catch (error) {
+      res.status(500).json({ error: 'Une erreur s\'est produite lors de la récupération des bénévoles non référents' });
+  }
+};
 
-module.exports = { signup, login, getBenevole, modifyBenevole, getBenevoleById };
+
+
+module.exports = { signup, login, getBenevole, modifyBenevole, getBenevoleById, getNonReferentBenevoles };
