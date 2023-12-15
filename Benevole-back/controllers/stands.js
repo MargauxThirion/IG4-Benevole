@@ -28,23 +28,29 @@ exports.getOneStands = (req, res, next) => {
     .then((stands) => {res.status(200).json(stands)})
     .catch((error) => {res.status(404).json({error: error})})
 };
+exports.modifyStands = async (req, res) => {
+    try {
+        const standId = req.params.id;
+        const updates = req.body;
 
-exports.modifyStands = (req, res, next) => {
-    const stands = new Stands({
-        _id: req.params.id,
-        referents: req.body.referents,
-        nom_stand: req.body.nom_stand,
-        description: req.body.description,
-        horaireCota: [{
-            heure: req.body.heure,
-            nb_benevole: req.body.nb_benevole,
-            liste_benevole: []
-        }]
-    });
-    Stands.updateOne({_id: req.params.id}, stands)
-    .then(() => {res.status(201).json({message: 'Stands modifié !'})})
-    .catch((error) => {res.status(400).json({error: error})})
+        // Mettre à jour le stand avec les données fournies dans req.body
+        const updatedStand = await Stands.findByIdAndUpdate(
+            standId,
+            { $set: updates },
+            { new: true, runValidators: true }
+        );
+
+        if (!updatedStand) {
+            return res.status(404).json({ message: 'Stand non trouvé' });
+        }
+
+        res.status(200).json({ message: 'Stand modifié!', stand: updatedStand });
+    } catch (error) {
+        console.error('Une erreur s\'est produite lors de la modification du stand', error);
+        res.status(500).json({ error: 'Une erreur s\'est produite lors de la modification du stand' });
+    }
 };
+
 
 exports.deleteStands = (req, res, next) => {
     Stands.deleteOne({_id: req.params.id})
