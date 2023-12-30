@@ -32,6 +32,21 @@ exports.getOneFestival = (req, res, next) => {
     .catch((error) => {res.status(404).json({error: error})})
 };
 
+exports.getLatestFestival = (req, res, next) => {
+    // Trouvez tous les festivals, triez-les par date_fin en ordre décroissant et prenez le premier
+    Festival.findOne().sort({ date_fin: -1 })
+    .then((festival) => {
+        if (festival) {
+            res.status(200).json(festival);
+        } else {
+            res.status(404).json({ message: 'Aucun festival trouvé' });
+        }
+    })
+    .catch((error) => {
+        res.status(500).json({ error: error });
+    });
+};
+
 exports.modifyFestival = async (req, res) => {
     try {
         const festivalId = req.params.id;
