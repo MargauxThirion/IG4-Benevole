@@ -5,8 +5,8 @@ const upload = multer({ dest: 'uploads/' });
 
 const jeuxCtrl = require('../controllers/jeux');
 
+
 router.post('/upload', upload.single('file'), jeuxCtrl.importJeuxFromExcel);
-router.post('/', jeuxCtrl.createJeu);
 router.get('/:id', jeuxCtrl.getOneJeu);
 router.put('/:id', jeuxCtrl.modifyJeu);
 router.delete('/:id', jeuxCtrl.deleteJeu);

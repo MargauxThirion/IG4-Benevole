@@ -11,46 +11,49 @@ exports.importJeuxFromExcel = async (req, res) => {
       const sheetNames = workbook.SheetNames;
       const sheetData = xlsx.utils.sheet_to_json(workbook.Sheets[sheetNames[0]]);
   
-      // Vous pouvez ici supprimer tous les jeux si vous souhaitez réinitialiser la base de données
-      // await Jeu.deleteMany({});
-  
-      const jeuxPromises = sheetData.map(jeu => {
-        const newJeu = new Jeu({
-            nom_jeu: jeu['Nom du jeu'], // Assurez-vous que le nom de la colonne correspond exactement
-            editeur: jeu['Éditeur'],
-            niveau: jeu['Type'],
-            recu: jeu['Reçu'] === 'oui', // Transformez la valeur en booléen
-            lien: jeu['Notice'] // Assurez-vous que le nom de la colonne correspond
-        });
-        return newJeu.save();
+      // Supprimez tous les jeux existants
+      await Jeu.deleteMany({});
 
-      });
-  
+      const uniqueNames = new Set();
+      const jeuxPromises = [];
+      for (const jeu of sheetData) {
+        if (!uniqueNames.has(jeu['Nom du jeu'])) {
+          uniqueNames.add(jeu['Nom du jeu']);
+          const newJeu = new Jeu({
+                nom_jeu: jeu['Nom du jeu'],
+                editeur: jeu['Éditeur'],
+                type: jeu['Type'],
+                ageMin: jeu['âge min'],
+                duree: jeu['Durée'],
+                theme: jeu['Thèmes'],
+                mecanisme: jeu['Mécanismes'],
+                tags: jeu['Tags'],
+                description: jeu['Description'],
+                nbJoueurs: jeu['nb joueurs'],
+                recu: jeu['Reçu'] === 'oui', // Transformez la valeur en booléen
+                zone: jeu['idZone'],
+                animationRequise: jeu['Animation requise'] === 'oui',
+                lien: jeu['Notice'],
+                logo: jeu['Logo'],
+          });
+          jeuxPromises.push(newJeu.save());
+        } else {
+          // Si le jeu est un doublon, ne faites rien ou loggez-le si nécessaire
+          console.log(`Doublon ignoré: ${jeu['Nom du jeu']}`);
+        }
+      }
       await Promise.all(jeuxPromises);
-  
-      res.status(201).json({ message: 'Jeux importés avec succès' });
+        res.status(201).json({ message: 'Tout les jeux ont été téléchargés' });
+
     } catch (error) {
       console.error(error);
       res.status(500).json({ message: 'Erreur lors de l\'importation des jeux', error });
     }
-  };
-
-exports.createJeu = (req, res, next) => {
-    const jeux = new Jeu({
-        nom_jeu: req.body.nom_jeu,
-        editeur: req.body.editeur,
-        niveau: req.body.niveau,
-        recu: req.body.recu,
-        lien: req.body.lien,
-    });
-    jeux.save()
-    .then(() => {res.status(201).json({message: 'Jeu créé !'})})
-    .catch((error) => {res.status(400).json({error: error})})
 };
 
 exports.getOneJeu = (req, res, next) => {
     Jeu.findOne({_id: req.params.id})
-    .then((jeux) => {res.status(200).json(jeux)})
+    .then((jeu) => {res.status(200).json(jeu)})
     .catch((error) => {res.status(404).json({error: error})})
 };
 
