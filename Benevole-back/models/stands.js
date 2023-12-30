@@ -9,6 +9,7 @@ const standsSchema =  mongoose.Schema({
     }],
     nom_stand: { type: String, required: true },
     description: { type: String, required: true },
+    date: { type: String, required: true },
     horaireCota: [{
         heure: { type: String, required: true },
         nb_benevole: { type: Number, required: true },

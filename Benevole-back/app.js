@@ -10,6 +10,7 @@ const jeuxRoutes = require('./routes/jeux');
 const standsRoutes = require('./routes/stands');
 const zoneRoutes = require('./routes/zone');
 const accueilRoutes = require('./routes/accueil');
+const festivalRoutes = require('./routes/festival');
 
 const app = express();
 
@@ -34,5 +35,6 @@ app.use('/jeux', jeuxRoutes);
 app.use('/stands', standsRoutes);
 app.use('/zone', zoneRoutes);
 app.use('/accueil', accueilRoutes);
+app.use('/festival', festivalRoutes);
 
 module.exports = app;

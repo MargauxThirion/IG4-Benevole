@@ -1,12 +1,13 @@
 const Stands = require('../models/stands');
 const Benevole = require('../models/benevole');
 exports.createStands = (req, res, next) => {
-    const { referents, nom_stand, description, horaireCota } = req.body;
+    const { referents, nom_stand, description, horaireCota, date } = req.body;
 
     const stands = new Stands({
         referents,
         nom_stand,
         description,
+        date,
         horaireCota: horaireCota.map(item => ({
             heure: item.heure,
             nb_benevole: item.nb_benevole,
