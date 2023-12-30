@@ -1,12 +1,15 @@
 const express = require('express');
 const router = express.Router();
+const multer = require('multer');
+const upload = multer({ dest: 'uploads/' });
 
-const typeStandCtrl = require('../controllers/jeux');
+const jeuxCtrl = require('../controllers/jeux');
 
-router.post('/', typeStandCtrl.createJeux);
-router.get('/:id', typeStandCtrl.getOneJeux);
-router.put('/:id', typeStandCtrl.modifyJeux);
-router.delete('/:id', typeStandCtrl.deleteJeux);
-router.get('/', typeStandCtrl.getAllJeux);
+router.post('/upload', upload.single('file'), jeuxCtrl.importJeuxFromExcel);
+router.post('/', jeuxCtrl.createJeu);
+router.get('/:id', jeuxCtrl.getOneJeu);
+router.put('/:id', jeuxCtrl.modifyJeu);
+router.delete('/:id', jeuxCtrl.deleteJeu);
+router.get('/', jeuxCtrl.getAllJeu);
 
 module.exports = router;
