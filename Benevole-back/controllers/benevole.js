@@ -37,20 +37,20 @@ async function modifyBenevole(req, res) {
 
 
 
-exports.deleteBenevole = (req, res, next) => {
+async function deleteBenevole (req, res, next) {
     Benevole.deleteOne({_id: req.params.id})
     .then(() => {res.status(200).json({message: 'Benevole supprimé !'})})
     .catch((error) => {res.status(400).json({error: error})})
 };
 
-exports.getAllBenevole = (req, res, next) => {
+async function getAllBenevole (req, res, next) {
     Benevole.find()
     .then((benevoles) => {res.status(200).json(benevoles)})
     .catch((error) => {res.status(400).json({error: error})})
 };
 
 
-exports.getAllBenevoleReferent = (req, res, next) => {
+async function getAllBenevoleReferent (req, res, next) {
     Benevole.find({referent: true})
     .then((benevoles) => {res.status(200).json(benevoles)})
     .catch((error) => {res.status(400).json({error: error})})
@@ -158,4 +158,4 @@ async function getNonReferentBenevoles (req, res) {
 
 
 
-module.exports = { signup, login, getBenevole, modifyBenevole, getBenevoleById, getNonReferentBenevoles };
+module.exports = { signup, login, getBenevole, modifyBenevole, getBenevoleById, getNonReferentBenevoles, getAllBenevole, deleteBenevole, getAllBenevoleReferent };
