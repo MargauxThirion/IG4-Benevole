@@ -28,9 +28,9 @@ exports.createStands = (req, res, next) => {
 
 exports.getOneStands = (req, res, next) => {
   Stands.findOne({ _id: req.params.id })
-  .populate('referents', 'pseudo')
-  .populate('horaireCota.liste_benevole', 'pseudo')
-  
+    .populate("referents", "pseudo")
+    .populate("horaireCota.liste_benevole", "pseudo")
+
     .then((stands) => {
       res.status(200).json(stands);
     })
@@ -61,42 +61,43 @@ exports.modifyStands = async (req, res) => {
       "Une erreur s'est produite lors de la modification du stand",
       error
     );
-    res
-      .status(500)
-      .json({
-        error: "Une erreur s'est produite lors de la modification du stand",
-      });
+    res.status(500).json({
+      error: "Une erreur s'est produite lors de la modification du stand",
+    });
   }
 };
 
 exports.deleteStand = async (req, res, next) => {
-    try {
-      // Récupérez l'ID du stand à supprimer depuis les paramètres de la requête
-      const standId = req.params.id;
-  
-      // Récupérez le stand à supprimer
-      const stand = await Stands.findById(standId);
-  
-      if (!stand) {
-        return res.status(404).json({ message: "Stand introuvable." });
-      }
-  
-      // Réinitialisez les bénévoles référents du stand
-      const referents = stand.referents;
-      for (const referentId of referents) {
-        await Benevole.findByIdAndUpdate(referentId, { referent: false });
-      }
-  
-      // Supprimez le stand lui-même en utilisant findByIdAndDelete
-      await Stands.findByIdAndDelete(standId);
-  
-      return res.status(200).json({ message: "Stand supprimé !" });
-    } catch (error) {
-      console.error("Erreur lors de la suppression du stand :", error);
-      return res.status(500).json({ error: "Une erreur s'est produite lors de la suppression du stand." });
+  try {
+    // Récupérez l'ID du stand à supprimer depuis les paramètres de la requête
+    const standId = req.params.id;
+
+    // Récupérez le stand à supprimer
+    const stand = await Stands.findById(standId);
+
+    if (!stand) {
+      return res.status(404).json({ message: "Stand introuvable." });
     }
-  };
-  
+
+    // Réinitialisez les bénévoles référents du stand
+    const referents = stand.referents;
+    for (const referentId of referents) {
+      await Benevole.findByIdAndUpdate(referentId, { referent: false });
+    }
+
+    // Supprimez le stand lui-même en utilisant findByIdAndDelete
+    await Stands.findByIdAndDelete(standId);
+
+    res.status(200).json({ message: "Stand supprimé !" });
+  } catch (error) {
+    console.error("Erreur lors de la suppression du stand :", error);
+    res
+      .status(500)
+      .json({
+        error: "Une erreur s'est produite lors de la suppression du stand.",
+      });
+  }
+};
 
 exports.getAllStands = (req, res, next) => {
   Stands.find()
@@ -158,12 +159,10 @@ exports.addReferentToStand = (req, res, next) => {
       });
     })
     .then((stand) => {
-      res
-        .status(200)
-        .json({
-          message: "Référent ajouté au stand avec succès",
-          stand: stand,
-        });
+      res.status(200).json({
+        message: "Référent ajouté au stand avec succès",
+        stand: stand,
+      });
     })
     .catch((error) => {
       res.status(400).json({ error: error.message });
@@ -171,33 +170,43 @@ exports.addReferentToStand = (req, res, next) => {
 };
 
 exports.removeReferentFromStand = async (req, res) => {
-    try {
-      const { standId, referentId } = req.params;
-  
-      // Vérifiez d'abord si le stand existe
-      const stand = await Stands.findById(standId);
-      if (!stand) {
-        return res.status(404).json({ message: 'Stand non trouvé' });
-      }
-  
-      // Vérifiez si le référent existe dans la liste des référents du stand
-      const referentIndex = stand.referents.indexOf(referentId);
-      if (referentIndex === -1) {
-        return res.status(404).json({ message: 'Référent non trouvé dans le stand' });
-      }
-  
-      // Supprimez le référent du stand
-      stand.referents.splice(referentIndex, 1);
-  
-      // Mettez à jour le statut de référent du bénévole à false
-      await Benevole.findByIdAndUpdate(referentId, { referent: false });
-  
-      // Enregistrez les modifications apportées au stand
-      await stand.save();
-  
-      res.status(200).json({ message: 'Référent supprimé du stand avec succès' });
-    } catch (error) {
-      console.error('Une erreur s\'est produite lors de la suppression du référent du stand :', error);
-      res.status(500).json({ error: 'Une erreur s\'est produite lors de la suppression du référent du stand.' });
+  try {
+    const { standId, referentId } = req.params;
+
+    // Vérifiez d'abord si le stand existe
+    const stand = await Stands.findById(standId);
+    if (!stand) {
+      return res.status(404).json({ message: "Stand non trouvé" });
     }
-  };
+
+    // Vérifiez si le référent existe dans la liste des référents du stand
+    const referentIndex = stand.referents.indexOf(referentId);
+    if (referentIndex === -1) {
+      return res
+        .status(404)
+        .json({ message: "Référent non trouvé dans le stand" });
+    }
+
+    // Supprimez le référent du stand
+    stand.referents.splice(referentIndex, 1);
+
+    // Mettez à jour le statut de référent du bénévole à false
+    await Benevole.findByIdAndUpdate(referentId, { referent: false });
+
+    // Enregistrez les modifications apportées au stand
+    await stand.save();
+
+    res.status(200).json({ message: "Référent supprimé du stand avec succès" });
+  } catch (error) {
+    console.error(
+      "Une erreur s'est produite lors de la suppression du référent du stand :",
+      error
+    );
+    res
+      .status(500)
+      .json({
+        error:
+          "Une erreur s'est produite lors de la suppression du référent du stand.",
+      });
+  }
+};
