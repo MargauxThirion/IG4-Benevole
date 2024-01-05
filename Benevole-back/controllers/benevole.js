@@ -93,19 +93,21 @@ async function login(req, res) {
     // Vérifier si l'utilisateur existe
     const benevole = await Benevole.findOne({ pseudo });
     if (!benevole) {
+      console.log('Utilisateur non trouvé');
       return res.status(401).json({ message: 'Identifiants invalides' });
     }
 
     // Vérifier si le mot de passe est correct
     const isPasswordValid = await bcrypt.compare(password, benevole.password);
     if (!isPasswordValid) {
+      console.log('Mot de passe invalide');
       return res.status(401).json({ message: 'Identifiants invalides' });
     }
 
     // Générer un token d'authentification
-    const token = jwt.sign({ pseudo: benevole.pseudo }, 'secret_key', { expiresIn: '1h' });
+    const token = jwt.sign({ pseudo: benevole.pseudo, admin: benevole.admin, referent: benevole.referent }, 'secret_key', { expiresIn: '1h' });
 
-    res.json({ message: 'Connexion réussie', token, pseudo: benevole.pseudo });
+    res.json({ message: 'Connexion réussie', token, pseudo: benevole.pseudo, admin: benevole.admin, referent: benevole.referent });
   } catch (error) {
     res.status(500).json({ message: 'Une erreur s\'est produite lors de la connexion', error });
   }
