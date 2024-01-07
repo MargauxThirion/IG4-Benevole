@@ -39,6 +39,18 @@ exports.getOneStands = (req, res, next) => {
     });
 };
 
+exports.getStandsByDate = (req, res, next) => {
+  Stands.find({ date: req.params.date })
+    .populate("referents", "pseudo")
+    .populate("horaireCota.liste_benevole", "pseudo")
+    .then((stands) => {
+      res.status(200).json(stands);
+    })
+    .catch((error) => {
+      res.status(404).json({ error: error });
+    });
+};
+
 exports.modifyStands = async (req, res) => {
   try {
     const standId = req.params.id;
