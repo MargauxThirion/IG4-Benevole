@@ -37,20 +37,20 @@ async function modifyBenevole(req, res) {
 
 
 
-exports.deleteBenevole = (req, res, next) => {
+async function deleteBenevole (req, res, next) {
     Benevole.deleteOne({_id: req.params.id})
     .then(() => {res.status(200).json({message: 'Benevole supprimé !'})})
     .catch((error) => {res.status(400).json({error: error})})
 };
 
-exports.getAllBenevole = (req, res, next) => {
+async function getAllBenevole (req, res, next) {
     Benevole.find()
     .then((benevoles) => {res.status(200).json(benevoles)})
     .catch((error) => {res.status(400).json({error: error})})
 };
 
 
-exports.getAllBenevoleReferent = (req, res, next) => {
+async function getAllBenevoleReferent (req, res, next) {
     Benevole.find({referent: true})
     .then((benevoles) => {res.status(200).json(benevoles)})
     .catch((error) => {res.status(400).json({error: error})})
@@ -93,19 +93,21 @@ async function login(req, res) {
     // Vérifier si l'utilisateur existe
     const benevole = await Benevole.findOne({ pseudo });
     if (!benevole) {
+      console.log('Utilisateur non trouvé');
       return res.status(401).json({ message: 'Identifiants invalides' });
     }
 
     // Vérifier si le mot de passe est correct
     const isPasswordValid = await bcrypt.compare(password, benevole.password);
     if (!isPasswordValid) {
+      console.log('Mot de passe invalide');
       return res.status(401).json({ message: 'Identifiants invalides' });
     }
 
     // Générer un token d'authentification
-    const token = jwt.sign({ pseudo: benevole.pseudo }, 'secret_key', { expiresIn: '1h' });
+    const token = jwt.sign({ pseudo: benevole.pseudo, admin: benevole.admin, referent: benevole.referent }, 'secret_key', { expiresIn: '1h' });
 
-    res.json({ message: 'Connexion réussie', token, pseudo: benevole.pseudo });
+    res.json({ message: 'Connexion réussie', token, pseudo: benevole.pseudo, admin: benevole.admin, referent: benevole.referent });
   } catch (error) {
     res.status(500).json({ message: 'Une erreur s\'est produite lors de la connexion', error });
   }
@@ -158,4 +160,4 @@ async function getNonReferentBenevoles (req, res) {
 
 
 
-module.exports = { signup, login, getBenevole, modifyBenevole, getBenevoleById, getNonReferentBenevoles };
+module.exports = { signup, login, getBenevole, modifyBenevole, getBenevoleById, getNonReferentBenevoles, getAllBenevole, deleteBenevole, getAllBenevoleReferent };
