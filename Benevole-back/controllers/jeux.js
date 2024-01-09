@@ -99,3 +99,4 @@ exports.getAllJeu = (req, res, next) => {
     .then((jeux) => {res.status(200).json(jeux)})
     .catch((error) => {res.status(400).json({error: error})})
 };
+*/
