@@ -11,7 +11,6 @@ const jeuSchema = mongoose.Schema({
     tags: { type: String},
     description: { type: String},
     recu: { type: Boolean, required: true},
-    zone: { type: String, required: true},
     nbJoueurs: { type: String},
     animationRequise: { type: String, required: true},
     lien: { type: String},
