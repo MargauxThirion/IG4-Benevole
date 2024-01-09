@@ -31,7 +31,6 @@ exports.importJeuxFromExcel = async (req, res) => {
                 description: jeu['Description'],
                 nbJoueurs: jeu['nb joueurs'],
                 recu: jeu['Reçu'] === 'oui', // Transformez la valeur en booléen
-                zone: jeu['idZone'],
                 animationRequise: jeu['Animation requise'] === 'oui',
                 lien: jeu['Notice'],
                 logo: jeu['Logo'],
@@ -57,7 +56,7 @@ exports.getOneJeu = (req, res, next) => {
     .catch((error) => {res.status(404).json({error: error})})
 };
 
-exports.getZones = (req, res, next) => {
+/*exports.getZones = (req, res, next) => {
     Jeu.find().distinct('zone')
     .then((zones) => {res.status(200).json(zones)})
     .catch((error) => {res.status(404).json({error: error})})
@@ -68,7 +67,7 @@ exports.getJeuxParZone = (req, res, next) => {
     .then((jeux) => {res.status(200).json(jeux)})
     .catch((error) => {res.status(404).json({error: error})})
 }
-
+*/
 exports.modifyJeu = (req, res, next) => {
     const jeux = new Jeu({
         nom_jeu: req.body.nom_jeu,

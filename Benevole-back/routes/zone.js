@@ -3,7 +3,8 @@ const router = express.Router();
 
 const zoneCtrl = require('../controllers/zone');
 
-router.post('/', zoneCtrl.createZone);
+router.post('/addJeux', zoneCtrl.addJeuxToZone);
+router.post('/', zoneCtrl.importZoneFromExcel);
 router.get('/:id', zoneCtrl.getOneZone);
 router.get('/', zoneCtrl.getAllZone);
 router.put('/:id', zoneCtrl.modifyZone);

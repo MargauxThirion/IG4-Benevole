@@ -12,7 +12,7 @@ const standsSchema =  mongoose.Schema({
     date: { type: Date, required: true },
     horaireCota: [{
         heure: { type: String, required: true },
-        nb_benevole: { type: Number, required: true },
+        nb_benevole: { type: Number},
         liste_benevole: [{
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Benevole', // Référence au modèle Benevole
