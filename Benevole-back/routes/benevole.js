@@ -11,7 +11,7 @@ router.put('/:pseudo', benevoleCtrl.modifyBenevole);
 router.get('/id/:id', benevoleCtrl.getBenevoleById);
 router.get('/non-referent', benevoleCtrl.getNonReferentBenevoles);
 // router.delete('/:id', benevoleCtrl.deleteBenevole);
-//router.get('/referent', benevoleCtrl.getAllBenevoleReferent);
+router.get('/referent', benevoleCtrl.getAllBenevoleReferent);
 //router.get('/', benevoleCtrl.getAllBenevole);
 router.get('/protected', authMiddleware, (req, res) => {
     res.json({ message: 'Accès autorisé à la ressource protégée' });

@@ -50,11 +50,16 @@ async function getAllBenevole (req, res, next) {
 };
 
 
-async function getAllBenevoleReferent (req, res, next) {
-    Benevole.find({referent: true})
-    .then((benevoles) => {res.status(200).json(benevoles)})
-    .catch((error) => {res.status(400).json({error: error})})
-};
+async function getAllBenevoleReferent(req, res) {
+  try {
+      // Trouver tous les bénévoles qui sont référents
+      const referentBenevoles = await Benevole.find({ referent: true });
+      res.status(200).json(referentBenevoles);
+  } catch (error) {
+      res.status(500).json({ error: 'Une erreur s\'est produite lors de la récupération des bénévoles référents' });
+  }
+}
+
 
 // Fonction d'inscription d'un nouvel utilisateur
 async function signup(req, res) {

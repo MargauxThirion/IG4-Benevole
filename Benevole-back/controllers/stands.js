@@ -113,8 +113,8 @@ exports.deleteStand = async (req, res, next) => {
 
 exports.getAllStands = (req, res, next) => {
   Stands.find()
-    .then((standss) => {
-      res.status(200).json(standss);
+    .then((stands) => {
+      res.status(200).json(stands);
     })
     .catch((error) => {
       res.status(400).json({ error: error });
