@@ -74,6 +74,7 @@ exports.getJeuxParZone = (req, res, next) => {
       res.status(404).json({ error: error });
   });
 }
+*/
 
 exports.modifyJeu = (req, res, next) => {
     const jeux = new Jeu({
@@ -99,4 +100,3 @@ exports.getAllJeu = (req, res, next) => {
     .then((jeux) => {res.status(200).json(jeux)})
     .catch((error) => {res.status(400).json({error: error})})
 };
-*/

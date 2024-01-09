@@ -16,6 +16,10 @@ async function modifyBenevole(req, res) {
       }
     }
     
+    // Hacher le nouveau mot de passe si fourni
+    if (benevoleUpdates.password && benevoleUpdates.password.trim() !== "") {
+      benevoleUpdates.password = await bcrypt.hash(benevoleUpdates.password, 10);
+    }
 
     // Utilisez le pseudo pour mettre à jour le bénévole
     const updatedBenevole = await Benevole.findOneAndUpdate(
@@ -95,15 +99,13 @@ async function login(req, res) {
   try {
     const { pseudo, password } = req.body;
 
-    // Vérifier si l'utilisateur existe
     const benevole = await Benevole.findOne({ pseudo });
     if (!benevole) {
-      console.log('Utilisateur non trouvé');
       return res.status(401).json({ message: 'Identifiants invalides' });
     }
 
-    // Vérifier si le mot de passe est correct
     const isPasswordValid = await bcrypt.compare(password, benevole.password);
+
     if (!isPasswordValid) {
       console.log('Mot de passe invalide');
       return res.status(401).json({ message: 'Identifiants invalides' });
@@ -114,6 +116,7 @@ async function login(req, res) {
 
     res.json({ message: 'Connexion réussie', token, pseudo: benevole.pseudo, admin: benevole.admin, referent: benevole.referent });
   } catch (error) {
+    console.error('Error during login:', error);
     res.status(500).json({ message: 'Une erreur s\'est produite lors de la connexion', error });
   }
 }
