@@ -1,45 +1,74 @@
 const Zone = require('../models/zone');
+const Jeu = require('../models/jeux');
 const xlsx = require('xlsx');
 
-exports.importZoneFromExcel = async (req, res, next) =>{
+exports.importZoneFromExcel = async (req, res) => {
     if (!req.file) {
         return res.status(400).json({ message: 'No file uploaded' });
-      }
-      const { horaireCota, date } = req.body;
-    
-      try {
-        await Zone.deleteMany({});
+    }
+
+    const { date } = req.body;
+
+    try {
         const workbook = xlsx.readFile(req.file.path);
         const sheetNames = workbook.SheetNames;
         const sheetData = xlsx.utils.sheet_to_json(workbook.Sheets[sheetNames[0]]);
         
+        await Zone.deleteMany({});
+        
         const uniqueIdZones = new Set();
         const zonesPromises = [];
         for (const data of sheetData) {
-            const idZone = data['IdZone'];
-            const nomZone = data['Zone plan'];
-            if (!uniqueIdZones.has(idZone)) {
-                uniqueIdZones.add(idZone);
-                const newZone = new Zone({
-                    nom_zone: nomZone,
-                    date: date,
-                    horaireCota: horaireCota.map((item) => ({
-                        heure: item.heure,
-                        nb_benevole: item.nb_benevole,
-                        liste_benevole: [],
-                    })),
+            const idZone = data['idZone'];
+            let nomZone = data['Zone bénévole'];
+            let zone_benevole = true;
+            if (!nomZone) {
+                nomZone = data['Zone plan'];
+                zone_benevole = false;
+            }
+            const uniqueKey = `${idZone}_${nomZone}`;
+        
 
+            if (!uniqueIdZones.has(uniqueKey)) {
+                uniqueIdZones.add(uniqueKey); 
+                const newZone = new Zone({
+                    id_zone: idZone,
+                    nom_zone: nomZone,
+                    zone_benevole: zone_benevole,
+                    date: date,
                 });
                 zonesPromises.push(newZone.save());
+            } else {
+                console.log(`Doublon ignoré: ${nomZone}`);
             }
         }
+
         await Promise.all(zonesPromises);
         res.status(201).json({ message: 'Toutes les zones ont été créées' });
     } catch (error) {
-            console.error(error);
-            res.status(500).json({ message: 'Erreur lors de l\'importation des zones', error });
-        }
-}
+        console.error(error);
+        res.status(500).json({ message: 'Erreur lors de l\'importation des zones', error });
+    }
+};
+
+
+exports.addHorairesToZone = async (req, res, next) => {
+    const { horaireCota } = req.body;
+
+    try {
+        const horairesToUpdate = horaireCota.map(item => ({
+            heure: item.heure,
+            nb_benevole: item.nb_benevole,
+            liste_benevole: [],
+        }));
+
+        await Zone.updateMany({}, { $set: { horaireCota: horairesToUpdate } });
+        res.status(200).json({ message: 'Horaires mis à jour pour toutes les zones' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error });
+    }
+};
 
 exports.addJeuxToZone = async (req, res, next) => {
     if (!req.file) {
@@ -53,12 +82,12 @@ exports.addJeuxToZone = async (req, res, next) => {
 
         const gamesPromises = [];
         for (const data of sheetData) {
-            const nomJeu = data['Nom du jeu'];
-            const idZone = data['IdZone']; // Vous devez adapter cette partie en fonction de la structure de votre fichier Excel
+            const nom_jeu = data['Nom du jeu'];
+            const idZone = data['idZone']; // Vous devez adapter cette partie en fonction de la structure de votre fichier Excel
 
-            const jeu = await Jeu.findOne({ nom_jeu: nomJeu });
+            const jeu = await Jeu.findOne({ nom_jeu: nom_jeu });
             if (jeu) {
-                const zone = await Zone.findOne({ nom_zone: idZone }); // Vous devez adapter cette partie en fonction de la structure de votre fichier Excel
+                const zone = await Zone.findOne({ id_zone: idZone }); // Vous devez adapter cette partie en fonction de la structure de votre fichier Excel
                 if (zone) {
                     zone.liste_jeux.push(jeu._id);
                     await zone.save();
