@@ -3,8 +3,8 @@ const Jeu = require('./jeux');
 const Benevole = require('./benevole');
 
 const zoneSchema = mongoose.Schema({
-    nom_zone: { type: String, required: true },
-    id_zone: { type: String, unique: true },
+    nom_zone: { type: String, required: true},
+    id_zone: { type: String, required: true},
     zone_benevole: { type: Boolean, required: true, default: true },
     referents: [{
         type: mongoose.Schema.Types.ObjectId,
@@ -27,6 +27,4 @@ const zoneSchema = mongoose.Schema({
         }]
       }]
 });
-
-
 module.exports = mongoose.model('Zone', zoneSchema);
