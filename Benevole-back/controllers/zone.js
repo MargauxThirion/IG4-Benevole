@@ -1,6 +1,8 @@
 const Zone = require('../models/zone');
 const Jeu = require('../models/jeux');
+const Benevole = require('../models/benevole');
 const xlsx = require('xlsx');
+const benevole = require('../models/benevole');
 
 exports.importZoneFromExcelJour1 = async (req, res) => {
     if (!req.file) {
@@ -158,15 +160,36 @@ exports.getOneZone = (req, res, next) => {
     .catch((error) => {res.status(404).json({error: error})})
 };
 
-exports.modifyZone = (req, res, next) => {
-    const zone = new Zone({
-        _id: req.params.id,
-        nom_zone: req.body.nom_zone,
-        jeux: req.body.jeux,
+exports.getZonesByDate = (req, res, next) => {
+    Zone.find({ date: req.params.date })
+    .populate("referents", "pseudo")
+    .populate("horaireCota.liste_benevole", "pseudo")
+    .then((zone) => {
+        res.status(200).json(zone);
+    })
+    .catch((error) => {
+        res.status(404).json({ error: error });
     });
-    Zone.updateOne({_id: req.params.id}, zone)
-    .then(() => {res.status(201).json({message: 'Zone modifiée !'})})
-    .catch((error) => {res.status(400).json({error: error})})
+};
+
+
+exports.modifyZone = (req, res, next) => {
+    try {
+        const zoneId = req.params.id;
+        const updates = req.body;
+        const updatedZone = Zone.findByIdAndUpdate(
+            zoneId, 
+            { $set: updates }, 
+            { new: true, runValidators: true }
+        );
+        if (!updatedZone) {
+            return res.status(404).json({ message: 'Zone non trouvée' });
+        }
+        res.status(200).json({ message: 'Zone modifiée!', zone: updatedZone });
+    } catch (error) {
+        console.error("Une erreur s'est produite lors de la modification de la zone", error);
+        res.status(500).json({ error: "Une erreur s'est produite lors de la modification de la zone" });
+    }
 };
 
 exports.deleteZone = (req, res, next) => {
@@ -180,3 +203,89 @@ exports.getAllZone = (req, res, next) => {
     .then((zones) => {res.status(200).json(zones)})
     .catch((error) => {res.status(400).json({error: error})})
 };
+
+exports.getZonesByDate = (req, res, next) => {
+    Zone.find({ date: req.params.date })
+    .then((zones) => {res.status(200).json(zones)})
+    .catch((error) => {res.status(400).json({error: error})})
+};
+
+exports.addBenevoleToHoraire = async (req, res, next) => {
+    const { benevoleId, horaireId } = req.body;
+    Zone.findOneAndUpdate(
+        { "horaireCota._id": horaireId },
+        { $addToSet: { "horaireCota.$.liste_benevole": benevoleId } },
+        { new: true }
+    )
+    .then((zone) => {
+        if (!zone) {
+            return res.status(404).json({ message: 'Zone non trouvée' });
+        }
+        res.status(200).json({ message: 'Bénévole ajouté à la zone', zone });
+    })
+    .catch((error) => {
+        console.error("Une erreur s'est produite lors de l'ajout du bénévole à la zone", error);
+        res.status(500).json({ error: "Une erreur s'est produite lors de l'ajout du bénévole à la zone" });
+    });
+};
+
+exports.addReferentToZone = async (req, res, next) => {
+    const { benevoleId, zoneId } = req.params;
+    Zone.findById(benevoleId)
+    .then ((zone) => {
+        if (!zone) {
+            return res.status(404).json({ message: 'Zone non trouvée' });
+        }
+        return Zone.findOneAndUpdate(
+            { _id: zoneId },
+            { $addToSet: { referents: benevoleId } },
+            { new: true, runValidators: true }
+        ).then((zone) => {
+            if (!zone) {
+                return res.status(404).json({ message: 'Zone non trouvée' });
+            }
+            return Benevole.findOneAndUpdate(
+                { _id: benevoleId },
+                { $addToSet: { zones: zoneId } },
+                { new: true, runValidators: true }
+            ).then(() => {
+                return zone;
+            });
+        });
+    })
+    .then((zone) => {
+        res.status(200).json({ 
+            message: 'Référent ajouté à la zone', 
+            zone: zone, });
+    })
+    .catch((error) => {
+        console.error("Une erreur s'est produite lors de l'ajout du référent à la zone", error);
+        res.status(500).json({ error: "Une erreur s'est produite lors de l'ajout du référent à la zone" });
+    });
+};
+
+exports.removeReferentFromZone = async (req, res, next) => {
+    try {
+        const { referentId, zoneId } = req.params;
+        const zone = await Zone.findById(zoneId);
+        if (!zone) {
+            return res.status(404).json({ message: 'Zone non trouvée' });
+        }
+
+        const referentIndex = zone.referents.indexOf(referentId);
+        if (referentIndex === -1) {
+            return res
+            .status(404)
+            .json({ message: 'Référent non trouvé' });
+        }
+
+        zone.referents.splice(referentIndex, 1);
+        await Benevole.findByIdAndUpdate(referentId, { referent: false });
+        await zone.save();
+        res.status(200).json({ message: 'Référent supprimé de la zone avec succès' });
+    } catch (error) {
+        console.error("Une erreur s'est produite lors de la suppression du référent de la zone", error);
+        res.status(500).json({ error: "Une erreur s'est produite lors de la suppression du référent de la zone" });
+    }
+};
+
