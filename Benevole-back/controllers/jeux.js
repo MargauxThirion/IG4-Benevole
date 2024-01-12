@@ -56,25 +56,6 @@ exports.getOneJeu = (req, res, next) => {
     .catch((error) => {res.status(404).json({error: error})})
 };
 
-/*exports.getZones = (req, res, next) => {
-    Jeu.find().distinct('zone')
-    .then((zones) => {res.status(200).json(zones)})
-    .catch((error) => {res.status(404).json({error: error})})
-};
-
-exports.getJeuxParZone = (req, res, next) => {
-  Jeu.find({
-      zone: req.params.zone,
-      // animationRequise: { $ne: "false" } // $ne is "not equal" in MongoDB, pour récupérer que les jeux qui ont besoin d'être animé
-  })
-  .then((jeux) => {
-      res.status(200).json(jeux);
-  })
-  .catch((error) => {
-      res.status(404).json({ error: error });
-  });
-}
-*/
 
 exports.modifyJeu = (req, res, next) => {
     const jeux = new Jeu({
