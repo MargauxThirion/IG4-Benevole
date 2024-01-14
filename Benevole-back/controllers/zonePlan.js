@@ -181,18 +181,20 @@ exports.getAllZone = (req, res, next) => {
 
 exports.getNomsZonesBenevoles = async (req, res) => {
     try {
-      const zonePlanId = req.params.zonePlanId;
-      const zonePlan = await ZonePlan.findById(zonePlanId).populate('liste_zone_benevole');
-  
-      if (!zonePlan) {
-        return res.status(404).json({ message: 'Zone Plan non trouvée' });
-      }
-  
-      const nomsZonesBenevoles = zonePlan.liste_zone_benevole.map(zoneBenevole => zoneBenevole.nom_zone_benevole);
-  
-      res.status(200).json(nomsZonesBenevoles);
+        const zonePlanId = req.params.zonePlanId;
+        const zonePlan = await ZonePlan.findById(zonePlanId).populate('liste_zone_benevole');
+
+        if (!zonePlan) {
+            return res.status(404).json({ message: 'Zone Plan non trouvée' });
+        }
+
+        // Renvoyer l'objet zoneBenevole complet
+        const infosZonesBenevoles = zonePlan.liste_zone_benevole;
+
+        res.status(200).json(infosZonesBenevoles);
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: 'Erreur lors de la récupération des noms des zones bénévoles', error });
+        console.error(error);
+        res.status(500).json({ message: 'Erreur lors de la récupération des informations des zones bénévoles', error });
     }
-  };
+};
+
