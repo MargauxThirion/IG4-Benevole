@@ -2,10 +2,9 @@ const mongoose = require('mongoose');
 const Jeu = require('./jeux');
 const Benevole = require('./benevole');
 
-const zoneSchema = mongoose.Schema({
-    nom_zone: { type: String, required: true},
-    id_zone: { type: String, required: true},
-    zone_benevole: { type: Boolean, required: true, default: true },
+const zoneBenevoleSchema = mongoose.Schema({
+    nom_zone_benevole: { type: String, required: true},
+    id_zone_benevole: { type: String, required: true},
     referents: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Benevole', // Référence au modèle Benevole
@@ -27,4 +26,4 @@ const zoneSchema = mongoose.Schema({
         }]
       }]
 });
-module.exports = mongoose.model('Zone', zoneSchema);
+module.exports = mongoose.model('ZoneBenevole', zoneBenevoleSchema);

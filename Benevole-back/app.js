@@ -10,9 +10,11 @@ const benevoleRoutes = require('./routes/benevole');
 const animationRoutes = require('./routes/animation');
 const jeuxRoutes = require('./routes/jeux');
 const standsRoutes = require('./routes/stands');
-const zoneRoutes = require('./routes/zone');
+const zoneBenevoleRoutes = require('./routes/zoneBenevole');
+const zonePlanRoutes = require('./routes/zonePlan');
 const accueilRoutes = require('./routes/accueil');
 const festivalRoutes = require('./routes/festival');
+const flexibleRoutes = require('./routes/flexible');
 
 
 app.use(bodyParser.json({ limit: '50mb' }));
@@ -35,8 +37,10 @@ app.use('/benevole', benevoleRoutes);
 app.use('/animation', animationRoutes);
 app.use('/jeux', jeuxRoutes);
 app.use('/stands', standsRoutes);
-app.use('/zone', zoneRoutes);
+app.use('/zoneBenevole', zoneBenevoleRoutes);
+app.use('/zonePlan', zonePlanRoutes);
 app.use('/accueil', accueilRoutes);
 app.use('/festival', festivalRoutes);
+app.use('/flexible', flexibleRoutes);
 
 module.exports = app;

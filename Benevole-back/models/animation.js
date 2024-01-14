@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const Zone = require('./zone');
+const Zone = require('./zoneBenevole');
 const Benevole = require('./benevole');
 
 const animationSchema =  mongoose.Schema({

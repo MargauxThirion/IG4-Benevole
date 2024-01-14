@@ -1,4 +1,4 @@
-const Zone = require('../models/zone');
+const ZoneBenevole = require('../models/zoneBenevole');
 const Jeu = require('../models/jeux');
 const Benevole = require('../models/benevole');
 const xlsx = require('xlsx');
@@ -16,35 +16,32 @@ exports.importZoneFromExcelJour1 = async (req, res) => {
         const sheetNames = workbook.SheetNames;
         const sheetData = xlsx.utils.sheet_to_json(workbook.Sheets[sheetNames[0]]);
         
-        await Zone.deleteMany({});
-        
+        await ZoneBenevole.deleteMany({});
+
         const uniqueIdZones = new Set();
         const zonesPromises = [];
         for (const data of sheetData) {
             const idZone = data['idZone'];
-            let nomZone = data['Zone bénévole'];
-            let zone_benevole = true;
-            if (!nomZone) {
-                nomZone = data['Zone plan'];
-                zone_benevole = false;
-            }
+            const nomZone = data['Zone bénévole'];
             const uniqueKey = `${idZone}_${nomZone}_${date}`;
         
 
             if (!uniqueIdZones.has(uniqueKey)) {
                 uniqueIdZones.add(uniqueKey); 
-                const newZone = new Zone({
-                    id_zone: idZone,
-                    nom_zone: nomZone,
-                    zone_benevole: zone_benevole,
-                    date: date,
-                });
-                zonesPromises.push(newZone.save());
-                console.log(`Zone créée: ${nomZone} pour la date: ${date}`);
+                if (nomZone && nomZone.trim() !== '') {
+                    const newZone = new ZoneBenevole({
+                        id_zone_benevole: idZone,
+                        nom_zone_benevole: nomZone,
+                        date: date,
+                    });
+                    zonesPromises.push(newZone.save());
+                    console.log(`ZoneBenevole créée: ${nomZone} pour la date: ${date}`);
+                } else {
+                    console.log(`pas de nom de zone`);
+                }
             } else {
                 console.log(`Doublon ignoré: ${nomZone}`);
             }
-            console.log("toutes zone importer pour le jour 1");
         }
 
         await Promise.all(zonesPromises);
@@ -72,25 +69,23 @@ exports.importZoneFromExcelJour2 = async (req, res) => {
         const zonesPromises = [];
         for (const data of sheetData) {
             const idZone = data['idZone'];
-            let nomZone = data['Zone bénévole'];
-            let zone_benevole = true;
-            if (!nomZone) {
-                nomZone = data['Zone plan'];
-                zone_benevole = false;
-            }
+            const nomZone = data['Zone bénévole'];
             const uniqueKey = `${idZone}_${nomZone}_${date}`;
         
 
             if (!uniqueIdZones.has(uniqueKey)) {
                 uniqueIdZones.add(uniqueKey); 
-                const newZone = new Zone({
-                    id_zone: idZone,
-                    nom_zone: nomZone,
-                    zone_benevole: zone_benevole,
-                    date: date,
-                });
-                zonesPromises.push(newZone.save());
-                console.log(`Zone créée: ${nomZone} pour la date: ${date}`);
+                if (nomZone && nomZone.trim() !== '') {
+                    const newZone = new ZoneBenevole({
+                        id_zone_benevole: idZone,
+                        nom_zone_benevole: nomZone,
+                        date: date,
+                    });
+                    zonesPromises.push(newZone.save());
+                    console.log(`ZoneBenevole créée: ${nomZone} pour la date: ${date}`);
+                } else {
+                    console.log(`pas de nom de zone`);
+                }
             } else {
                 console.log(`Doublon ignoré: ${nomZone}`);
             }
@@ -115,7 +110,7 @@ exports.addHorairesToZone = async (req, res, next) => {
             liste_benevole: [],
         }));
 
-        await Zone.updateMany({}, { $set: { horaireCota: horairesToUpdate } });
+        await ZoneBenevole.updateMany({}, { $set: { horaireCota: horairesToUpdate } });
         res.status(200).json({ message: 'Horaires mis à jour pour toutes les zones' });
     } catch (error) {
         console.error(error);
@@ -140,14 +135,14 @@ exports.addJeuxToZone = async (req, res, next) => {
 
             const jeu = await Jeu.findOne({ nom_jeu: nom_jeu });
             if (jeu) {
-                const zone = await Zone.findOne({ id_zone: idZone }); // Vous devez adapter cette partie en fonction de la structure de votre fichier Excel
+                const zone = await ZoneBenevole.findOne({ id_zone_benevole: idZone }); // Vous devez adapter cette partie en fonction de la structure de votre fichier Excel
                 if (zone) {
                     zone.liste_jeux.push(jeu._id);
                     await zone.save();
                 }
             }
         }
-        res.status(201).json({ message: 'Les jeux ont été associés aux zones' });
+        res.status(201).json({ message: 'Les jeux ont été associés aux zones Benevole' });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Erreur lors de l\'association des jeux aux zones', error });
@@ -155,13 +150,13 @@ exports.addJeuxToZone = async (req, res, next) => {
 };
 
 exports.getOneZone = (req, res, next) => {
-    Zone.findOne({_id: req.params.id})
+    ZoneBenevole.findOne({_id: req.params.id})
     .then((zone) => {res.status(200).json(zone)})
     .catch((error) => {res.status(404).json({error: error})})
 };
 
 exports.getZonesByDate = (req, res, next) => {
-    Zone.find({ date: req.params.date })
+    ZoneBenevole.find({ date: req.params.date })
     .populate("referents", "pseudo")
     .populate("horaireCota.liste_benevole", "pseudo")
     .then((zone) => {
@@ -177,7 +172,7 @@ exports.modifyZone = (req, res, next) => {
     try {
         const zoneId = req.params.id;
         const updates = req.body;
-        const updatedZone = Zone.findByIdAndUpdate(
+        const updatedZone = ZoneBenevole.findByIdAndUpdate(
             zoneId, 
             { $set: updates }, 
             { new: true, runValidators: true }
@@ -193,26 +188,26 @@ exports.modifyZone = (req, res, next) => {
 };
 
 exports.deleteZone = (req, res, next) => {
-    Zone.deleteOne({_id: req.params.id})
+    ZoneBenevole.deleteOne({_id: req.params.id})
     .then(() => {res.status(200).json({message: 'Zone supprimée !'})})
     .catch((error) => {res.status(400).json({error: error})})
 };
 
 exports.getAllZone = (req, res, next) => {
-    Zone.find()
+    ZoneBenevole.find()
     .then((zones) => {res.status(200).json(zones)})
     .catch((error) => {res.status(400).json({error: error})})
 };
 
 exports.getZonesByDate = (req, res, next) => {
-    Zone.find({ date: req.params.date })
+    ZoneBenevole.find({ date: req.params.date })
     .then((zones) => {res.status(200).json(zones)})
     .catch((error) => {res.status(400).json({error: error})})
 };
 
 exports.addBenevoleToHoraire = async (req, res, next) => {
     const { benevoleId, horaireId } = req.body;
-    Zone.findOneAndUpdate(
+    ZoneBenevole.findOneAndUpdate(
         { "horaireCota._id": horaireId },
         { $addToSet: { "horaireCota.$.liste_benevole": benevoleId } },
         { new: true }
@@ -231,12 +226,12 @@ exports.addBenevoleToHoraire = async (req, res, next) => {
 
 exports.addReferentToZone = async (req, res, next) => {
     const { benevoleId, zoneId } = req.params;
-    Zone.findById(benevoleId)
+    ZoneBenevole.findById(benevoleId)
     .then ((zone) => {
         if (!zone) {
             return res.status(404).json({ message: 'Zone non trouvée' });
         }
-        return Zone.findOneAndUpdate(
+        return ZoneBenevole.findOneAndUpdate(
             { _id: zoneId },
             { $addToSet: { referents: benevoleId } },
             { new: true, runValidators: true }
@@ -267,7 +262,7 @@ exports.addReferentToZone = async (req, res, next) => {
 exports.removeReferentFromZone = async (req, res, next) => {
     try {
         const { referentId, zoneId } = req.params;
-        const zone = await Zone.findById(zoneId);
+        const zone = await ZoneBenevole.findById(zoneId);
         if (!zone) {
             return res.status(404).json({ message: 'Zone non trouvée' });
         }
@@ -289,16 +284,21 @@ exports.removeReferentFromZone = async (req, res, next) => {
     }
 };
 
+async function trouverOuCreerZoneBenevole(nomZoneBenevole, idZone, date) {
+    // Rechercher la zone bénévole par son nom ou son ID
+    let zoneBenevole = await ZoneBenevole.findOne({ nom_zone_benevole: nomZoneBenevole, id_zone_benevole: idZone, date: date });
 
-exports.getByZoneBenevole = (req, res, next) => {
-    Zone.find({ zone_benevole: true })
-    .then((zones) => {res.status(200).json(zones)})
-    .catch((error) => {res.status(400).json({error: error})})
+    // Si elle n'existe pas, créez-en une nouvelle
+    if (!zoneBenevole) {
+        zoneBenevole = new ZoneBenevole({
+            nom_zone_benevole: nomZoneBenevole,
+            id_zone_benevole: idZone,
+            date: date,
+            // Autres propriétés si nécessaire
+        });
+
+        await ZoneBenevole.save();
+    }
+
+    return ZoneBenevole;
 }
-
-exports.getByZonePlan = (req, res, next) => {
-    Zone.find({ zone_benevole: false })
-    .then((zones) => {res.status(200).json(zones)})
-    .catch((error) => {res.status(400).json({error: error})})
-}
-

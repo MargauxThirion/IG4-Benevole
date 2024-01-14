@@ -1,5 +1,6 @@
 const Stands = require("../models/stands");
 const Benevole = require("../models/benevole");
+const Festival = require("../models/festival");
 
 exports.createStands = (req, res, next) => {
   const { referents, nom_stand, description, horaireCota, date } = req.body;
@@ -222,3 +223,46 @@ exports.removeReferentFromStand = async (req, res) => {
       });
   }
 };
+
+exports.getStandBothDate = async (req, res) => {
+  try {
+    const festival = await Festival.findOne().sort({ date: -1 }); // Récupère les dates du festival
+
+    // Vérifiez si le festival a été trouvé
+    if (!festival) {
+      throw new Error("Festival non trouvé");
+    }
+
+    const stands = await Stands.find();
+
+    const festivalDateDebutStr = festival.date_debut.toISOString().split('T')[0];
+    const festivalDateFinStr = festival.date_fin.toISOString().split('T')[0];
+
+    const standMap = new Map();
+
+    stands.forEach(stand => {
+      const standDateStr = stand.date.toISOString().split('T')[0];
+
+      if (!standMap.has(stand.nom_stand)) {
+        standMap.set(stand.nom_stand, [standDateStr]);
+      } else {
+        const dates = standMap.get(stand.nom_stand);
+        if (!dates.includes(standDateStr)) {
+          dates.push(standDateStr);
+        }
+      }
+    });
+
+    const standsAvailableBothDays = Array.from(standMap)
+      .filter(([_, dates]) => dates.includes(festivalDateDebutStr) && dates.includes(festivalDateFinStr))
+      .map(([nom_stand, _]) => {
+        return stands.filter(stand => stand.nom_stand === nom_stand);
+      });
+
+    res.status(200).json(standsAvailableBothDays.flat());
+  } catch (error) {
+    console.error("Erreur lors de la récupération des stands:", error); // Log de l'erreur pour le débogage
+    res.status(500).json({ message: "Erreur lors de la récupération des stands", error: error.message });
+  }
+};
+
