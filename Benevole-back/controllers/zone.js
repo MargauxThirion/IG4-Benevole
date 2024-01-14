@@ -289,3 +289,16 @@ exports.removeReferentFromZone = async (req, res, next) => {
     }
 };
 
+
+exports.getByZoneBenevole = (req, res, next) => {
+    Zone.find({ zone_benevole: true })
+    .then((zones) => {res.status(200).json(zones)})
+    .catch((error) => {res.status(400).json({error: error})})
+}
+
+exports.getByZonePlan = (req, res, next) => {
+    Zone.find({ zone_benevole: false })
+    .then((zones) => {res.status(200).json(zones)})
+    .catch((error) => {res.status(400).json({error: error})})
+}
+
