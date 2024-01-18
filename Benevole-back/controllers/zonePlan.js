@@ -179,6 +179,18 @@ exports.getAllZone = (req, res, next) => {
         .catch((error) => { res.status(400).json({ error: error }) })
 };
 
+exports.getZonesByDate = (req, res, next) => {
+    ZonePlan.find({ date: req.params.date })
+    .populate("referents", "pseudo")
+    .populate("horaireCota.liste_benevole", "pseudo")
+    .then((zone) => {
+        res.status(200).json(zone);
+    })
+    .catch((error) => {
+        res.status(404).json({ error: error });
+    });
+};
+
 exports.getNomsZonesBenevoles = async (req, res) => {
     try {
         const zonePlanId = req.params.zonePlanId;
