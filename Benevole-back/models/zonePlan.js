@@ -8,6 +8,11 @@ const zonePlanSchema = mongoose.Schema({
         ref: 'ZoneBenevole', // Référence au modèle ZoneBenevole
         required: false
     }],
+    referents: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Benevole', // Référence au modèle Benevole
+        required: false
+    }],
     date: { type: Date, required: true },
     liste_jeux: [{
         type: mongoose.Schema.Types.ObjectId,
