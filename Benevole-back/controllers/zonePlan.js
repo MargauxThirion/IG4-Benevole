@@ -181,37 +181,6 @@ exports.addJeuxToZone = async (req, res, next) => {
         console.error(error);
         res.status(500).json({ message: 'Erreur lors de l\'association des jeux aux zones', error });
     }
-      const jeu = await Jeu.findOne({ nom_jeu: nom_jeu });
-      if (jeu) {
-        console.log("Jeu trouvé :", nom_jeu);
-
-        const zones = await ZonePlan.find({ nom_zone_plan: nom_zone_plan });
-        if (zones && zones.length > 0) {
-          zones.forEach(async (zone) => {
-            if (!zone.liste_jeux.includes(jeu._id)) {
-              zone.liste_jeux.push(jeu._id);
-              await zone.save();
-            } else {
-              console.log("Le jeu est déjà dans la liste de cette zone");
-            }
-          });
-        } else {
-          console.log("Aucune zone trouvée pour le nom :", nom_zone_plan);
-        }
-      } else {
-        console.log("Jeu non trouvé pour le nom :", nom_jeu);
-      }
-    }
-    res.status(201).json({ message: "Les jeux ont été associés aux zones" });
-  } catch (error) {
-    console.error(error);
-    res
-      .status(500)
-      .json({
-        message: "Erreur lors de l'association des jeux aux zones",
-        error,
-      });
-  }
 };
 
 exports.getOneZone = (req, res, next) => {
