@@ -137,8 +137,6 @@ exports.addJeuxToZone = async (req, res, next) => {
 
             const jeu = await Jeu.findOne({ nom_jeu: nom_jeu });
             if (jeu) {
-                console.log("Jeu trouvé :", nom_jeu);
-
                 const zones = await ZonePlan.find({ nom_zone_plan: nom_zone_plan });
                 if (zones && zones.length > 0) {
                     zones.forEach(async (zone) => {

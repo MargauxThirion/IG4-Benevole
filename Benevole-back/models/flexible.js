@@ -6,7 +6,7 @@ const flexibleSchema = mongoose.Schema({
     benevole_id: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Benevole',
-        required: false
+        required: true
     }],
     horaire: [{
         date : {type: Date, required: true},

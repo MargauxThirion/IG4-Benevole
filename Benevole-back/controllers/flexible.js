@@ -8,9 +8,9 @@ exports.createFlexible = (req, res, next) => {
     const flexible = new Flexible({
         benevole_id,
         horaire: horaire.map((item) => ({
-            date,
+            date: item.date,
             heure: item.heure,
-            liste_stand: [],
+            liste_stand:item.liste_stand.map((item) => (item.id_stand)),
         })),
     });
     flexible.save()
@@ -25,7 +25,7 @@ exports.createFlexible = (req, res, next) => {
 exports.getOneFlexible = (req, res, next) => {
     Flexible.findOne({_id: req.params.id})
     .populate('benevole_id', 'pseudo')
-    .populate('horaire.liste_stand', 'nom_stand')
+    .populate('horaire.liste_stand', 'id_stand')
     .then((flexible) => {
         res.status(200).json(flexible);
     })
