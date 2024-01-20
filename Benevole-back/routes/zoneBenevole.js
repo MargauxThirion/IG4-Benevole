@@ -12,10 +12,10 @@ router.post('/jour2', upload.single('file'), zoneCtrl.importZoneFromExcelJour2);
 router.get('/date/:date', zoneCtrl.getZonesByDate);
 router.get('/:id', zoneCtrl.getOneZone);
 router.get('/', zoneCtrl.getAllZone);
-router.put('/addBenevole/:idHoraire/:idBenevole', zoneCtrl.addBenevoleToHoraire);
-router.put('/referent/:idZone/:idBenevole', zoneCtrl.addReferentToZone);
+router.put('/participer/:idHoraire/:idBenevole', zoneCtrl.addBenevoleToHoraire);
+router.put('/referent/:idZoneBenevole/:benevoleId', zoneCtrl.addReferentToZoneBenevole);
 router.put('/:id', zoneCtrl.modifyZone);
-router.delete('/removeReferent/:zoneId/:referentId', zoneCtrl.removeReferentFromZone);
+router.delete('/removeReferent/:idZoneBenevole/:referentId', zoneCtrl.removeReferentFromZoneBenevole);
 router.delete('/:id', zoneCtrl.deleteZone);
 
 module.exports = router;

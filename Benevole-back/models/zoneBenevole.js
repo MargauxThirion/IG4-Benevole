@@ -26,4 +26,5 @@ const zoneBenevoleSchema = mongoose.Schema({
         }]
       }]
 });
+
 module.exports = mongoose.model('ZoneBenevole', zoneBenevoleSchema);

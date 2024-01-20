@@ -136,7 +136,6 @@ exports.addBenevoleToHoraire = (req, res, next) => {
       }
       res
         .status(200)
-        .json({ message: "Bénévole ajouté à l'horaire avec succès" });
     })
     .catch((error) => {
       res.status(400).json({ error: error });
