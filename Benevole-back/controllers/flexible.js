@@ -5,12 +5,19 @@ const Stands = require('../models/stands');
 exports.createFlexible = (req, res, next) => {
     const {benevole_id, horaire} = req.body;
     console.log(req.body);
+    horaire.forEach((horaireItem) => {
+        console.log("Date:", horaireItem.date, "Heure:", horaireItem.heure);
+        console.log("Liste des stands pour cet horaire:");
+        horaireItem.liste_stand.forEach(standId => {
+            console.log(standId); // Afficher l'identifiant du stand
+        });
+    });
     const flexible = new Flexible({
         benevole_id,
         horaire: horaire.map((item) => ({
             date: item.date,
             heure: item.heure,
-            liste_stand:item.liste_stand.map((item) => (item.id_stand)),
+            liste_stand:item.liste_stand,
         })),
     });
     flexible.save()
@@ -51,5 +58,11 @@ exports.getAllFlexible = (req, res, next) => {
     .populate('benevole_id', 'pseudo')
     .populate('horaire.liste_stand', 'nom_stand')
     .then((flexible) => {res.status(200).json(flexible)})
+    .catch((error) => {res.status(400).json({error: error})})
+};
+
+exports.removeAllFlexible = (req, res, next) => {
+    Flexible.deleteMany()
+    .then(() => {res.status(200).json({message: 'Flexible supprimés !'})})
     .catch((error) => {res.status(400).json({error: error})})
 };

@@ -9,12 +9,12 @@ const flexibleSchema = mongoose.Schema({
         required: true
     }],
     horaire: [{
-        date : {type: Date, required: true},
-        heure: {type: String},
+        date: {type: Date, required: true},
+        heure: {type: String, required: true},
         liste_stand :[{
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Stands',
-            required: false
+            required: true
         }]
         
     }],
