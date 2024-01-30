@@ -15,5 +15,7 @@ router.get('/:id', zoneCtrl.getOneZone);
 router.get('/', zoneCtrl.getAllZone);
 router.put('/participer/:idHoraire/:idBenevole', zoneCtrl.addBenevoleToHoraire);
 router.put('/referent/:zonePlanId/:benevoleId', zoneCtrl.addReferentToZonePlan);
+router.put('/:id', zoneCtrl.modifyZonePlan);
 router.delete('/removeReferent/:zonePlanId/:referentId', zoneCtrl.removeReferentFromZonePlan);
+
 module.exports = router;

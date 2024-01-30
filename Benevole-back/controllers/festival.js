@@ -1,24 +1,39 @@
 const Festival = require("../models/festival");
+const Stand = require("../models/stands");
 
-exports.createFestival = (req, res, next) => {
+exports.createFestival = async (req, res, next) => {
   const { nom, lieu, description, date_debut, date_fin } = req.body;
 
-  const festival = new Festival({
-    nom,
-    lieu,
-    description,
-    date_debut,
-    date_fin,
-  });
+  try {
+    // Création du festival
+    const festival = new Festival({ nom, lieu, description, date_debut, date_fin });
+    await festival.save();
 
-  festival
-    .save()
-    .then(() => {
-      res.status(201).json({ message: "Festival créé !" });
-    })
-    .catch((error) => {
-      res.status(400).json({ error: error });
+    // Création du premier stand pour la date de début du festival
+    const standDebut = new Stand({
+      nom_stand: "Animation jeu",
+      description: "Animation jeu - Jour 1",
+      date: date_debut,
+      horaireCota: [],
+      referents: [],
     });
+    await standDebut.save();
+
+    // Création du second stand pour la date de fin du festival
+    const standFin = new Stand({
+      nom_stand: "Animation jeu",
+      description: "Animation jeu - Jour 2",
+      date: date_fin,
+      horaireCota: [],
+      referents: [],
+    });
+    await standFin.save();
+
+    res.status(201).json({ message: "Festival et stands associés créés !" });
+  } catch (error) {
+    console.error("Erreur lors de la création du festival et des stands", error);
+    res.status(400).json({ error });
+  }
 };
 
 exports.getAllFestival = (req, res, next) => {

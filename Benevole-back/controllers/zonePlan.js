@@ -278,6 +278,24 @@ exports.addBenevoleToHoraire = async (req, res, next) => {
     });
 };
 
+exports.modifyZonePlan = async (req, res) => {
+  const zoneId = req.params.id;
+  const updates = req.body;
+  
+  try {
+    const updatedZone = await ZonePlan.findByIdAndUpdate(zoneId, updates, { new: true, runValidators: true }).populate('liste_zone_benevole').populate('referents').populate('liste_jeux');
+    
+    if (!updatedZone) {
+      return res.status(404).json({ message: "ZonePlan non trouvée" });
+    }
+    
+    res.status(200).json({ message: "ZonePlan modifiée avec succès!", zone: updatedZone });
+  } catch (error) {
+    console.error("Erreur lors de la modification de la ZonePlan", error);
+    res.status(500).json({ error: "Erreur lors de la modification de la ZonePlan" });
+  }
+};
+
 exports.addReferentToZonePlan = (req, res, next) => {
   const { zonePlanId, benevoleId } = req.params;
 
