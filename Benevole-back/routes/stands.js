@@ -6,6 +6,7 @@ const standCtrl = require('../controllers/stands');
 router.post('/', standCtrl.createStands);
 router.get('/date/both', standCtrl.getStandBothDate);
 router.get('/date/:date', standCtrl.getStandsByDate);
+router.get('/benevole/:id', standCtrl.getStandsByBenevole);
 router.get('/:id', standCtrl.getOneStands);
 router.get('/', standCtrl.getAllStands);
 router.put('/:id', standCtrl.modifyStands);
