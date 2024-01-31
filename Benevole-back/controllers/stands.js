@@ -122,59 +122,54 @@ exports.getAllStands = (req, res, next) => {
       res.status(400).json({ error: error });
     });
 };
-exports.addBenevoleToHoraire = (req, res, next) => {
+
+exports.addBenevoleToHoraire = async (req, res, next) => {
   const { idHoraire, idBenevole } = req.params;
 
-  // Trouver l'horaire spécifique pour obtenir l'heure, la date et la capacité
-  Stands.findOne({ "horaireCota._id": idHoraire })
-    .then(standSpecifique => {
-      if (!standSpecifique) {
-        return res.status(404).json({ message: "Horaire non trouvé" });
-      }
+  try {
+    // Trouver l'horaire spécifique pour obtenir l'heure, la date et la capacité
+    const standSpecifique = await Stands.findOne({ "horaireCota._id": idHoraire });
+    
+    if (!standSpecifique) {
+      return res.status(404).json({ message: "Horaire non trouvé" });
+    }
 
-      const dateEvenement = standSpecifique.date;
-      const horaireSpecifique = standSpecifique.horaireCota.find(h => h._id.toString() === idHoraire);
-      if (!horaireSpecifique) {
-        return res.status(404).json({ message: "Horaire spécifique non trouvé dans le stand" });
-      }
-      const heureEvenement = horaireSpecifique.heure;
-      const capaciteMaximale = horaireSpecifique.nb_benevole;
+    const dateEvenement = standSpecifique.date;
+    const horaireSpecifique = standSpecifique.horaireCota.find(h => h._id.toString() === idHoraire);
+    
+    if (!horaireSpecifique) {
+      return res.status(404).json({ message: "Horaire spécifique non trouvé dans le stand" });
+    }
+    
+    const heureEvenement = horaireSpecifique.heure;
+    const capaciteMaximale = horaireSpecifique.nb_benevole;
 
-      // Vérifier s'il existe un stand différent avec le même créneau horaire et le même bénévole
-      Stands.find({
-        _id: { $ne: standSpecifique._id }, // Exclure le stand actuel
-        date: dateEvenement,
-        "horaireCota.heure": heureEvenement,
-        "horaireCota.liste_benevole": idBenevole
-      })
-      .then(stands => {
-        // Vérifier si le bénévole est déjà inscrit à un autre stand pour le même créneau horaire à la même date
-        const isAlreadyRegistered = stands.some(stand => {
-          const autreHoraire = stand.horaireCota.find(h => h.heure === heureEvenement);
-          return autreHoraire && autreHoraire.liste_benevole.includes(idBenevole);
-        });
+    // Vérifier si le bénévole est déjà inscrit à un autre stand pour le même créneau horaire à la même date
+    const stands = await Stands.find({
+      date: dateEvenement,
+      "horaireCota.heure": heureEvenement,
+      "horaireCota.liste_benevole": idBenevole
+    });
 
-        if (isAlreadyRegistered) {
-          return res.status(400).json({ message: "Le bénévole est déjà inscrit à un autre stand pour le même créneau horaire à la même date." });
-        } else {
-          // Vérifier s'il y a de la place disponible dans le créneau horaire actuel
-          if (horaireSpecifique.liste_benevole.length >= capaciteMaximale) {
-            return res.status(400).json({ message: "Le créneau horaire est déjà complet, la capacité maximale est atteinte." });
-          } else {
-            // Ajouter le bénévole à l'horaire spécifique dans le stand actuel
-            Stands.findOneAndUpdate(
-              { "horaireCota._id": idHoraire },
-              { $addToSet: { "horaireCota.$.liste_benevole": idBenevole } },
-              { new: true }
-            )
-            .then(stand => res.status(200).json(stand))
-            .catch(error => res.status(400).json({ error: error.message }));
-          }
-        }
-      })
-      .catch(error => res.status(400).json({ error: error.message }));
-    })
-    .catch(error => res.status(400).json({ error: error.message }));
+    if (stands.length > 0) {
+      return res.status(400).json({ message: "Le bénévole est déjà inscrit à un autre stand pour le même créneau horaire à la même date." });
+    } else if (horaireSpecifique.liste_benevole.includes(idBenevole)) {
+      return res.status(400).json({ message: "Le bénévole est déjà inscrit à ce stand pour le même créneau horaire." });
+    } else if (horaireSpecifique.liste_benevole.length >= capaciteMaximale) {
+      return res.status(400).json({ message: "Le créneau horaire est déjà complet, la capacité maximale est atteinte." });
+    }
+
+    // Ajouter le bénévole à l'horaire spécifique dans le stand actuel
+    const updatedStand = await Stands.findOneAndUpdate(
+      { "horaireCota._id": idHoraire },
+      { $addToSet: { "horaireCota.$.liste_benevole": idBenevole } },
+      { new: true }
+    );
+
+    res.status(200).json(updatedStand);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
 };
 
 exports.addFlexibleToStand = (req, res, next) => {
