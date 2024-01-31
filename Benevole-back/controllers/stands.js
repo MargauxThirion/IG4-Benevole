@@ -177,7 +177,37 @@ exports.addBenevoleToHoraire = (req, res, next) => {
     .catch(error => res.status(400).json({ error: error.message }));
 };
 
+exports.addFlexibleToStand = (req, res, next) => {
+  const { horaire, standId, idBenevole } = req.params; // Les informations d'horaire et de stand que vous avez fournies
 
+  // Recherchez le stand spécifique en utilisant l'ID du stand
+  Stands.findById(standId)
+    .then(stand => {
+      if (!stand) {
+        return res.status(404).json({ message: "Stand non trouvé" });
+      }
+
+      // Trouvez l'horaire spécifique dans le stand en utilisant l'heure
+      const horaireSpecifique = stand.horaireCota.find(h => h.heure === horaire);
+      if (!horaireSpecifique) {
+        return res.status(404).json({ message: "Horaire spécifique non trouvé dans le stand" });
+      }
+
+      // Vérifiez s'il y a de la place disponible dans cet horaire spécifique
+      if (horaireSpecifique.liste_benevole.length >= horaireSpecifique.nb_benevole) {
+        return res.status(400).json({ message: "Le créneau horaire est complet, la capacité maximale est atteinte." });
+      } else {
+        // Inscrivez le flexible à cet horaire spécifique
+        horaireSpecifique.liste_benevole.push(idBenevole); // Supposons que flexibleId soit l'ID du flexible
+
+        // Enregistrez les modifications dans la base de données
+        stand.save()
+          .then(updatedStand => res.status(200).json(updatedStand))
+          .catch(error => res.status(400).json({ error: error.message }));
+      }
+    })
+    .catch(error => res.status(400).json({ error: error.message }));
+};
 
 exports.addReferentToStand = (req, res, next) => {
   const { idStand, idBenevole } = req.params;

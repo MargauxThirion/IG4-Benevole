@@ -42,7 +42,7 @@ exports.getOneFlexible = (req, res, next) => {
 };
 
 exports.getFlexibleByBenevole = (req, res, next) => {
-    Flexible.find({benevole_id: req.params.id})
+    Flexible.findOne({benevole_id: req.params.id})
     .populate('benevole_id', 'pseudo')
     .populate('horaire.liste_stand', 'nom_stand')
     .then((flexible) => {
@@ -66,3 +66,18 @@ exports.removeAllFlexible = (req, res, next) => {
     .then(() => {res.status(200).json({message: 'Flexible supprimés !'})})
     .catch((error) => {res.status(400).json({error: error})})
 };
+exports.removeOneFlexibleById = async (req, res) => {
+    try {
+        const result = await Flexible.deleteOne({ _id: req.params.id });
+
+        if (result.deletedCount === 0) {
+            return res.status(404).json({ message: "Flexible non trouvé" });
+        }
+
+        res.status(200).json({ message: "Flexible supprimé avec succès" });
+    } catch (error) {
+        res.status(500).json({ message: "Erreur lors de la suppression du flexible", error: error.message });
+    }
+};
+
+

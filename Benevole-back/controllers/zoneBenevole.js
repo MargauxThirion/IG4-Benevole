@@ -183,15 +183,15 @@ exports.getZonesByDate = (req, res, next) => {
     });
 };
 
-exports.modifyZone = (req, res, next) => {
-  try {
+exports.modifyZone = async (req, res, next) => {
     const zoneId = req.params.id;
     const updates = req.body;
-    const updatedZone = ZoneBenevole.findByIdAndUpdate(
-      zoneId,
-      { $set: updates },
-      { new: true, runValidators: true }
-    );
+    try {
+    const updatedZone = await ZoneBenevole.findByIdAndUpdate(
+      zoneId, 
+      updates, { new: true, runValidators: true })
+      .populate('liste_jeux');
+    
     if (!updatedZone) {
       return res.status(404).json({ message: "Zone non trouvée" });
     }

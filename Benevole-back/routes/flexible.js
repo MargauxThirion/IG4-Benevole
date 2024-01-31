@@ -7,6 +7,7 @@ router.post('/', flexibleCtrl.createFlexible);
 router.get('/benevole/:id', flexibleCtrl.getFlexibleByBenevole);
 router.get('/:id', flexibleCtrl.getOneFlexible);
 router.get('/', flexibleCtrl.getAllFlexible);
+router.delete('/:id', flexibleCtrl.removeOneFlexibleById);
 router.delete('/', flexibleCtrl.removeAllFlexible);
 
 module.exports = router;
