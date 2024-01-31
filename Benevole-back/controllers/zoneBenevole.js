@@ -183,29 +183,27 @@ exports.getZonesByDate = (req, res, next) => {
     });
 };
 
-exports.modifyZone = (req, res, next) => {
+exports.modifyZone = async (req, res) => {
+  const zoneId = req.params.id;
+  const updates = req.body;
+  
   try {
-    const zoneId = req.params.id;
-    const updates = req.body;
-    const updatedZone = ZoneBenevole.findByIdAndUpdate(
-      zoneId,
-      { $set: updates },
+    const updatedZone = await ZoneBenevole.findByIdAndUpdate(
+      zoneId, 
+      updates, 
       { new: true, runValidators: true }
-    );
+    )
+    .populate('referents')
+    .populate('liste_jeux');
+
     if (!updatedZone) {
-      return res.status(404).json({ message: "Zone non trouvée" });
+      return res.status(404).json({ message: "ZoneBenevole non trouvée" });
     }
-    res.status(200).json({ message: "Zone modifiée!", zone: updatedZone });
+    
+    res.status(200).json({ message: "ZoneBenevole modifiée avec succès!", zone: updatedZone });
   } catch (error) {
-    console.error(
-      "Une erreur s'est produite lors de la modification de la zone",
-      error
-    );
-    res
-      .status(500)
-      .json({
-        error: "Une erreur s'est produite lors de la modification de la zone",
-      });
+    console.error("Erreur lors de la modification de la ZoneBenevole", error);
+    res.status(500).json({ error: "Erreur lors de la modification de la ZoneBenevole" });
   }
 };
 
