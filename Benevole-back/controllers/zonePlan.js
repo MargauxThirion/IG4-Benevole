@@ -276,7 +276,10 @@ exports.modifyZonePlan = async (req, res) => {
   const updates = req.body;
   
   try {
-    const updatedZone = await ZonePlan.findByIdAndUpdate(zoneId, updates, { new: true, runValidators: true }).populate('liste_zone_benevole').populate('referents').populate('liste_jeux');
+    const updatedZone = await ZonePlan.findByIdAndUpdate(zoneId, updates, { new: true, runValidators: true })
+    .populate('liste_zone_benevole')
+    .populate('referents')
+    .populate('liste_jeux');
     
     if (!updatedZone) {
       return res.status(404).json({ message: "ZonePlan non trouvée" });
