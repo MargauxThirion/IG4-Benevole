@@ -1,3 +1,4 @@
+const cron = require('node-cron');
 const Flexible = require('../models/flexible');
 const Benevole = require('../models/benevole');
 const Stands = require('../models/stands');
@@ -95,13 +96,28 @@ exports.removeOneFlexibleById = async (req, res) => {
         }
 
         res.status(200).json({ message: "HoraireCota supprimé avec succès pour la date donnée" });
-        if (!result.horaire.length) {
-            await Flexible.findByIdAndRemove(idFlexible);
-        }
     } catch (error) {
         res.status(500).json({ message: "Erreur lors de la suppression des horaireCota", error: error.message });
     }
 };
+
+exports.checkAndDeleteFlexible = async (req, res) => {
+    try {
+      // Récupérez tous les flexibles avec horaire vide
+      const flexiblesToDelete = await Flexible.find({ horaire: [] });
+  
+      // Supprimez chaque instance de Flexible avec horaire vide
+      const deletedFlexibles = [];
+      for (const flexible of flexiblesToDelete) {
+        await Flexible.findByIdAndRemove(flexible._id);
+        deletedFlexibles.push(flexible._id);
+      }
+  
+      res.status(200).json({ message: 'Opération réussie', deletedFlexibles });
+    } catch (error) {
+      res.status(500).json({ message: 'Erreur lors de l\'opération', error: error.message });
+    }
+  };
 
 
 

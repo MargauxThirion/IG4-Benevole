@@ -3,6 +3,7 @@ const router = express.Router();
 
 const flexibleCtrl = require('../controllers/flexible');
 
+router.post('/check', flexibleCtrl.checkAndDeleteFlexible);
 router.post('/', flexibleCtrl.createFlexible);
 router.get('/benevole/:id', flexibleCtrl.getFlexibleByBenevole);
 router.get('/:id', flexibleCtrl.getOneFlexible);
