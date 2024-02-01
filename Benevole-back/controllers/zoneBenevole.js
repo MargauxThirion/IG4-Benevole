@@ -424,3 +424,26 @@ exports.trouverZoneParJeuId = async (req, res) => {
       res.status(500).json({ message: "Erreur lors de la recherche de la zone pour le jeu", error });
   }
 };
+
+exports.getJeuxByZone = async (req, res) => {
+  try {
+    // Récupérez l'ID de la zone à partir des paramètres de la requête
+    const { idZone } = req.params;
+
+    // Trouvez la zone et peuplez la liste complète des jeux
+    const zoneWithJeux = await ZoneBenevole.findById(idZone)
+      .populate('liste_jeux') // Retirer le deuxième argument pour obtenir tous les champs
+      .exec();
+
+    // Vérifiez si la zone a été trouvée
+    if (!zoneWithJeux) {
+      return res.status(404).json({ message: 'Zone not found' });
+    }
+
+    // Répondez avec les jeux associés à la zone, incluant tous leurs attributs
+    res.status(200).json(zoneWithJeux.liste_jeux);
+  } catch (error) {
+    console.error('Error fetching games by zone:', error);
+    res.status(500).json({ message: 'Error fetching games by zone', error });
+  }
+};
