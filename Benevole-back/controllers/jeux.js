@@ -118,5 +118,3 @@ exports.searchJeux = async (req, res) => {
       res.status(500).json({ message: "Erreur lors de la recherche des jeux", error });
   }
 };
-
-

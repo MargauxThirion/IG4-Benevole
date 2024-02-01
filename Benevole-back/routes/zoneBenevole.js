@@ -19,5 +19,6 @@ router.put('/referent/:idZoneBenevole/:benevoleId', zoneCtrl.addReferentToZoneBe
 router.put('/:id', zoneCtrl.modifyZone);
 router.delete('/removeReferent/:idZoneBenevole/:referentId', zoneCtrl.removeReferentFromZoneBenevole);
 router.delete('/:id', zoneCtrl.deleteZone);
+router.get('/:idZone/jeux', zoneCtrl.getJeuxByZone);
 
 module.exports = router;
