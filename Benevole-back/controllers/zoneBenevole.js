@@ -229,11 +229,9 @@ exports.modifyZone = async (req, res) => {
   try {
     const updatedZone = await ZoneBenevole.findByIdAndUpdate(
       zoneId, 
-      updates, 
+      { $set: updates },
       { new: true, runValidators: true }
     )
-    .populate('referents')
-    .populate('liste_jeux');
 
     if (!updatedZone) {
       return res.status(404).json({ message: "ZoneBenevole non trouvée" });
