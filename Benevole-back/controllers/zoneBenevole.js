@@ -1,8 +1,8 @@
 const ZoneBenevole = require("../models/zoneBenevole");
 const Jeu = require("../models/jeux");
 const Benevole = require("../models/benevole");
+const Festival = require("../models/festival");
 const xlsx = require("xlsx");
-const benevole = require("../models/benevole");
 
 exports.importZoneFromExcelJour1 = async (req, res) => {
   if (!req.file) {
@@ -183,6 +183,44 @@ exports.getZonesByDate = (req, res, next) => {
       res.status(404).json({ error: error });
     });
 };
+
+exports.getZoneByBothDate = async (req, res, next) => {
+  try {
+    const festival = await Festival.findOne().sort({ date: -1 })
+    if (!festival) {
+      throw new Error("Festival non trouvé");
+    }
+    const zones = await ZoneBenevole.find();
+
+    const festivalDateDebutStr = festival.date_debut.toISOString().split('T')[0];
+    const festivalDateFinStr = festival.date_fin.toISOString().split('T')[0];
+
+    const zoneMap = new Map();
+    zones.forEach(zone => {
+      const zoneDateStr = zone.date.toISOString().split('T')[0];
+      if(!zoneMap.has(zone.nom_zone_benevole)) {
+        zoneMap.set(zone.nom_zone_benevole, [zoneDateStr]);
+      } else {
+        const dates = zoneMap.get(zone.nom_zone_benevole);
+        if (!dates.includes(zoneDateStr)) {
+          dates.push(zoneDateStr);
+        }
+      }
+    });
+
+    const zoneAvailableBothDate  = Array.from(zoneMap)
+    .filter(([_, dates]) => dates.includes(festivalDateDebutStr) && dates.includes(festivalDateFinStr))
+    .map(([nom_zone_benevole, _]) =>{
+      return zones.filter(zone => zone.nom_zone_benevole === nom_zone_benevole);
+    });
+
+    res.status(200).json(zoneAvailableBothDate.flat());
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
 
 exports.modifyZone = async (req, res) => {
   const zoneId = req.params.id;
@@ -365,4 +403,24 @@ async function trouverOuCreerZoneBenevole(nomZoneBenevole, idZone, date) {
   }
 
   return ZoneBenevole;
-}
+};
+
+
+exports.trouverZoneParJeuId = async (req, res) => {
+  const jeuId = req.params.jeuId;
+
+  try {
+      // Trouver la zone qui contient l'ID du jeu dans sa liste de jeux
+      const zone = await ZoneBenevole.findOne({ liste_jeux: jeuId }).populate('liste_jeux', 'nom_jeu');
+
+      if (!zone) {
+          return res.status(404).json({ message: "Aucune zone trouvée pour ce jeu" });
+      }
+
+      // Renvoyer le nom de la zone trouvée
+      res.status(200).json({ nom_zone: zone.nom_zone_benevole, jeux: zone.liste_jeux });
+  } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Erreur lors de la recherche de la zone pour le jeu", error });
+  }
+};

@@ -15,6 +15,7 @@ const zonePlanRoutes = require('./routes/zonePlan');
 const accueilRoutes = require('./routes/accueil');
 const festivalRoutes = require('./routes/festival');
 const flexibleRoutes = require('./routes/flexible');
+const flexibleZoneRoutes = require('./routes/flexibleZone');
 
 
 app.use(bodyParser.json({ limit: '50mb' }));
@@ -42,5 +43,7 @@ app.use('/zonePlan', zonePlanRoutes);
 app.use('/accueil', accueilRoutes);
 app.use('/festival', festivalRoutes);
 app.use('/flexible', flexibleRoutes);
+app.use('/flexibleZone', flexibleZoneRoutes);
+
 
 module.exports = app;

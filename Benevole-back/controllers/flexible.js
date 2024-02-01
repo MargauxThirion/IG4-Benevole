@@ -95,6 +95,9 @@ exports.removeOneFlexibleById = async (req, res) => {
         }
 
         res.status(200).json({ message: "HoraireCota supprimé avec succès pour la date donnée" });
+        if (!result.horaire.length) {
+            await Flexible.findByIdAndRemove(idFlexible);
+        }
     } catch (error) {
         res.status(500).json({ message: "Erreur lors de la suppression des horaireCota", error: error.message });
     }
