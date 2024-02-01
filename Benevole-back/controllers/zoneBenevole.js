@@ -22,24 +22,27 @@ exports.importZoneFromExcelJour1 = async (req, res) => {
     const zonesPromises = [];
     for (const data of sheetData) {
       const idZone = data["idZone"];
-      const nomZone = data["Zone bénévole"];
+      let nomZone = data["Zone bénévole"] ? data["Zone bénévole"].trim() : ""; // Utilisez trim() pour enlever les espaces
+      const nomZonePlan = data["Zone plan"] ? data["Zone plan"].trim() : ""; // Pareil pour zonePlan
+
+      // Si nomZone est vide, utiliser nomZonePlan à la place
+      if (!nomZone && nomZonePlan) {
+        nomZone = nomZonePlan;
+      }
+
       const uniqueKey = `${idZone}_${nomZone}_${date}`;
 
-      if (!uniqueIdZones.has(uniqueKey)) {
+      if (!uniqueIdZones.has(uniqueKey) && nomZone) {
         uniqueIdZones.add(uniqueKey);
-        if (nomZone && nomZone.trim() !== "") {
-          const newZone = new ZoneBenevole({
-            id_zone_benevole: idZone,
-            nom_zone_benevole: nomZone,
-            date: date,
-          });
-          zonesPromises.push(newZone.save());
-          console.log(`ZoneBenevole créée: ${nomZone} pour la date: ${date}`);
-        } else {
-          console.log(`pas de nom de zone`);
-        }
+        const newZone = new ZoneBenevole({
+          id_zone_benevole: idZone,
+          nom_zone_benevole: nomZone,
+          date: date,
+        });
+        zonesPromises.push(newZone.save());
+        console.log(`ZoneBenevole créée: ${nomZone} pour la date: ${date}`);
       } else {
-        console.log(`Doublon ignoré: ${nomZone}`);
+        console.log(`Nom de zone vide ou doublon ignoré: ${nomZone}`);
       }
     }
 
@@ -47,9 +50,7 @@ exports.importZoneFromExcelJour1 = async (req, res) => {
     res.status(201).json({ message: "Toutes les zones ont été créées" });
   } catch (error) {
     console.error(error);
-    res
-      .status(500)
-      .json({ message: "Erreur lors de l'importation des zones", error });
+    res.status(500).json({ message: "Erreur lors de l'importation des zones", error });
   }
 };
 
@@ -64,29 +65,31 @@ exports.importZoneFromExcelJour2 = async (req, res) => {
     const workbook = xlsx.readFile(req.file.path);
     const sheetNames = workbook.SheetNames;
     const sheetData = xlsx.utils.sheet_to_json(workbook.Sheets[sheetNames[0]]);
-
     const uniqueIdZones = new Set();
     const zonesPromises = [];
     for (const data of sheetData) {
       const idZone = data["idZone"];
-      const nomZone = data["Zone bénévole"];
+      let nomZone = data["Zone bénévole"] ? data["Zone bénévole"].trim() : ""; // Utilisez trim() pour enlever les espaces
+      const nomZonePlan = data["Zone plan"] ? data["Zone plan"].trim() : ""; // Pareil pour zonePlan
+
+      // Si nomZone est vide, utiliser nomZonePlan à la place
+      if (!nomZone && nomZonePlan) {
+        nomZone = nomZonePlan;
+      }
+
       const uniqueKey = `${idZone}_${nomZone}_${date}`;
 
-      if (!uniqueIdZones.has(uniqueKey)) {
+      if (!uniqueIdZones.has(uniqueKey) && nomZone) {
         uniqueIdZones.add(uniqueKey);
-        if (nomZone && nomZone.trim() !== "") {
-          const newZone = new ZoneBenevole({
-            id_zone_benevole: idZone,
-            nom_zone_benevole: nomZone,
-            date: date,
-          });
-          zonesPromises.push(newZone.save());
-          console.log(`ZoneBenevole créée: ${nomZone} pour la date: ${date}`);
-        } else {
-          console.log(`pas de nom de zone`);
-        }
+        const newZone = new ZoneBenevole({
+          id_zone_benevole: idZone,
+          nom_zone_benevole: nomZone,
+          date: date,
+        });
+        zonesPromises.push(newZone.save());
+        console.log(`ZoneBenevole créée: ${nomZone} pour la date: ${date}`);
       } else {
-        console.log(`Doublon ignoré: ${nomZone}`);
+        console.log(`Nom de zone vide ou doublon ignoré: ${nomZone}`);
       }
     }
 
@@ -94,9 +97,7 @@ exports.importZoneFromExcelJour2 = async (req, res) => {
     res.status(201).json({ message: "Toutes les zones ont été créées" });
   } catch (error) {
     console.error(error);
-    res
-      .status(500)
-      .json({ message: "Erreur lors de l'importation des zones", error });
+    res.status(500).json({ message: "Erreur lors de l'importation des zones", error });
   }
 };
 

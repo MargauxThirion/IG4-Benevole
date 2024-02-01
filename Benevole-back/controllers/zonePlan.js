@@ -370,3 +370,14 @@ exports.removeReferentFromZonePlan = async (req, res) => {
       });
   }
 };
+
+
+exports.removeAllZonePlan = async (req, res) => {
+  try {
+    await ZonePlan.deleteMany();
+    res.status(200).json({ message: "Toutes les zones plan ont été supprimées" });
+  } catch (error) {
+    console.error("Erreur lors de la suppression de toutes les zones plan:", error);
+    res.status(500).json({ error: "Erreur lors de la suppression de toutes les zones plan" });
+  }
+};
