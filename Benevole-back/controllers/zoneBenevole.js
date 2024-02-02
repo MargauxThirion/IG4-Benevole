@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const ZoneBenevole = require("../models/zoneBenevole");
 const Jeu = require("../models/jeux");
 const Benevole = require("../models/benevole");
@@ -105,19 +106,20 @@ exports.addHorairesToZone = async (req, res, next) => {
   const { horaireCota } = req.body;
 
   try {
+    const zones = await ZoneBenevole.find();
+    for (let zone of zones) {
     const horairesToUpdate = horaireCota.map((item) => ({
+      _id: new mongoose.Types.ObjectId(), 
       heure: item.heure,
-      nb_benevole: item.nb_benevole,
+      nb_benevole: item.nb_benevole || 0,
       liste_benevole: [],
     }));
 
-    await ZoneBenevole.updateMany(
-      {},
-      { $set: { horaireCota: horairesToUpdate } }
-    );
-    res
-      .status(200)
-      .json({ message: "Horaires mis à jour pour toutes les zones" });
+    await ZoneBenevole.findByIdAndUpdate(zone._id, {
+      $set: { horaireCota: horairesToUpdate }
+    });
+  }
+    res.status(200).json({ message: "Horaires mis à jour pour toutes les zones" });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error });
@@ -134,33 +136,32 @@ exports.addJeuxToZone = async (req, res, next) => {
     const sheetNames = workbook.SheetNames;
     const sheetData = xlsx.utils.sheet_to_json(workbook.Sheets[sheetNames[0]]);
 
-    const gamesPromises = [];
     for (const data of sheetData) {
       const nom_jeu = data["Nom du jeu"];
-      const idZone = data["idZone"]; // Vous devez adapter cette partie en fonction de la structure de votre fichier Excel
+      const idZone = data["idZone"]; // Adaptez cette partie selon votre fichier Excel
 
       const jeu = await Jeu.findOne({ nom_jeu: nom_jeu });
       if (jeu) {
-        const zone = await ZoneBenevole.findOne({ id_zone_benevole: idZone }); // Vous devez adapter cette partie en fonction de la structure de votre fichier Excel
-        if (zone) {
+        // Trouvez toutes les zones qui correspondent à idZone
+        const zones = await ZoneBenevole.find({ id_zone_benevole: idZone });
+        
+        for (const zone of zones) {
           zone.liste_jeux.push(jeu._id);
           await zone.save();
         }
       }
     }
-    res
-      .status(201)
-      .json({ message: "Les jeux ont été associés aux zones Benevole" });
+
+    res.status(201).json({ message: "Les jeux ont été associés à toutes les zones Benevole correspondantes" });
   } catch (error) {
     console.error(error);
-    res
-      .status(500)
-      .json({
-        message: "Erreur lors de l'association des jeux aux zones",
-        error,
-      });
+    res.status(500).json({
+      message: "Erreur lors de l'association des jeux aux zones",
+      error,
+    });
   }
 };
+
 
 exports.getOneZone = (req, res, next) => {
   ZoneBenevole.findOne({ _id: req.params.id })

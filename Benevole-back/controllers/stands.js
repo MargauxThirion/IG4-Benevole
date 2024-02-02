@@ -345,3 +345,21 @@ exports.getStandsByBenevole = async (req, res) => {
   }
 };
 
+exports.getStandsByReferent = async (req, res) => {
+  try {
+    const referentId = req.params.id;
+    const referent = await Benevole.findById(referentId);
+
+    if (!referent) {
+      return res.status(404).json({ message: "Référent non trouvé" });
+    }
+
+    const stands = await Stands.find({ referents: referentId });
+
+    res.status(200).json(stands);
+  } catch (error) {
+    console.error("Erreur lors de la récupération des stands:", error); // Log de l'erreur pour le débogage
+    res.status(500).json({ message: "Erreur lors de la récupération des stands", error: error.message });
+  }
+};
+
