@@ -52,7 +52,9 @@ exports.importZoneFromExcelJour1 = async (req, res) => {
     res.status(201).json({ message: "Toutes les zones ont été créées" });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Erreur lors de l'importation des zones", error });
+    res
+      .status(500)
+      .json({ message: "Erreur lors de l'importation des zones", error });
   }
 };
 
@@ -99,7 +101,9 @@ exports.importZoneFromExcelJour2 = async (req, res) => {
     res.status(201).json({ message: "Toutes les zones ont été créées" });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Erreur lors de l'importation des zones", error });
+    res
+      .status(500)
+      .json({ message: "Erreur lors de l'importation des zones", error });
   }
 };
 
@@ -109,18 +113,20 @@ exports.addHorairesToZone = async (req, res, next) => {
   try {
     const zones = await ZoneBenevole.find();
     for (let zone of zones) {
-    const horairesToUpdate = horaireCota.map((item) => ({
-      _id: new mongoose.Types.ObjectId(), 
-      heure: item.heure,
-      nb_benevole: item.nb_benevole || 0,
-      liste_benevole: [],
-    }));
+      const horairesToUpdate = horaireCota.map((item) => ({
+        _id: new mongoose.Types.ObjectId(),
+        heure: item.heure,
+        nb_benevole: item.nb_benevole || 0,
+        liste_benevole: [],
+      }));
 
-    await ZoneBenevole.findByIdAndUpdate(zone._id, {
-      $set: { horaireCota: horairesToUpdate }
-    });
-  }
-    res.status(200).json({ message: "Horaires mis à jour pour toutes les zones" });
+      await ZoneBenevole.findByIdAndUpdate(zone._id, {
+        $set: { horaireCota: horairesToUpdate },
+      });
+    }
+    res
+      .status(200)
+      .json({ message: "Horaires mis à jour pour toutes les zones" });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error });
@@ -145,7 +151,7 @@ exports.addJeuxToZone = async (req, res, next) => {
       if (jeu) {
         // Trouvez toutes les zones qui correspondent à idZone
         const zones = await ZoneBenevole.find({ id_zone_benevole: idZone });
-        
+
         for (const zone of zones) {
           zone.liste_jeux.push(jeu._id);
           await zone.save();
@@ -153,7 +159,12 @@ exports.addJeuxToZone = async (req, res, next) => {
       }
     }
 
-    res.status(201).json({ message: "Les jeux ont été associés à toutes les zones Benevole correspondantes" });
+    res
+      .status(201)
+      .json({
+        message:
+          "Les jeux ont été associés à toutes les zones Benevole correspondantes",
+      });
   } catch (error) {
     console.error(error);
     res.status(500).json({
@@ -162,7 +173,6 @@ exports.addJeuxToZone = async (req, res, next) => {
     });
   }
 };
-
 
 exports.getOneZone = (req, res, next) => {
   ZoneBenevole.findOne({ _id: req.params.id })
@@ -176,7 +186,6 @@ exports.getOneZone = (req, res, next) => {
 
 exports.getZonesByDate = (req, res, next) => {
   ZoneBenevole.find({ date: req.params.date })
-    .populate("referents", "pseudo")
     .populate("horaireCota.liste_benevole", "pseudo")
     .then((zone) => {
       res.status(200).json(zone);
@@ -188,19 +197,21 @@ exports.getZonesByDate = (req, res, next) => {
 
 exports.getZoneByBothDate = async (req, res, next) => {
   try {
-    const festival = await Festival.findOne().sort({ date: -1 })
+    const festival = await Festival.findOne().sort({ date: -1 });
     if (!festival) {
       throw new Error("Festival non trouvé");
     }
     const zones = await ZoneBenevole.find();
 
-    const festivalDateDebutStr = festival.date_debut.toISOString().split('T')[0];
-    const festivalDateFinStr = festival.date_fin.toISOString().split('T')[0];
+    const festivalDateDebutStr = festival.date_debut
+      .toISOString()
+      .split("T")[0];
+    const festivalDateFinStr = festival.date_fin.toISOString().split("T")[0];
 
     const zoneMap = new Map();
-    zones.forEach(zone => {
-      const zoneDateStr = zone.date.toISOString().split('T')[0];
-      if(!zoneMap.has(zone.nom_zone_benevole)) {
+    zones.forEach((zone) => {
+      const zoneDateStr = zone.date.toISOString().split("T")[0];
+      if (!zoneMap.has(zone.nom_zone_benevole)) {
         zoneMap.set(zone.nom_zone_benevole, [zoneDateStr]);
       } else {
         const dates = zoneMap.get(zone.nom_zone_benevole);
@@ -210,11 +221,17 @@ exports.getZoneByBothDate = async (req, res, next) => {
       }
     });
 
-    const zoneAvailableBothDate  = Array.from(zoneMap)
-    .filter(([_, dates]) => dates.includes(festivalDateDebutStr) && dates.includes(festivalDateFinStr))
-    .map(([nom_zone_benevole, _]) =>{
-      return zones.filter(zone => zone.nom_zone_benevole === nom_zone_benevole);
-    });
+    const zoneAvailableBothDate = Array.from(zoneMap)
+      .filter(
+        ([_, dates]) =>
+          dates.includes(festivalDateDebutStr) &&
+          dates.includes(festivalDateFinStr)
+      )
+      .map(([nom_zone_benevole, _]) => {
+        return zones.filter(
+          (zone) => zone.nom_zone_benevole === nom_zone_benevole
+        );
+      });
 
     res.status(200).json(zoneAvailableBothDate.flat());
   } catch (error) {
@@ -223,26 +240,32 @@ exports.getZoneByBothDate = async (req, res, next) => {
   }
 };
 
-
 exports.modifyZone = async (req, res) => {
   const zoneId = req.params.id;
   const updates = req.body;
-  
+
   try {
     const updatedZone = await ZoneBenevole.findByIdAndUpdate(
-      zoneId, 
+      zoneId,
       { $set: updates },
       { new: true, runValidators: true }
-    )
+    );
 
     if (!updatedZone) {
       return res.status(404).json({ message: "ZoneBenevole non trouvée" });
     }
-    
-    res.status(200).json({ message: "ZoneBenevole modifiée avec succès!", zone: updatedZone });
+
+    res
+      .status(200)
+      .json({
+        message: "ZoneBenevole modifiée avec succès!",
+        zone: updatedZone,
+      });
   } catch (error) {
     console.error("Erreur lors de la modification de la ZoneBenevole", error);
-    res.status(500).json({ error: "Erreur lors de la modification de la ZoneBenevole" });
+    res
+      .status(500)
+      .json({ error: "Erreur lors de la modification de la ZoneBenevole" });
   }
 };
 
@@ -268,6 +291,7 @@ exports.getAllZone = (req, res, next) => {
 
 exports.getZonesByDate = (req, res, next) => {
   ZoneBenevole.find({ date: req.params.date })
+    .populate("horaireCota.liste_benevole", "pseudo")
     .then((zones) => {
       res.status(200).json(zones);
     })
@@ -410,7 +434,7 @@ exports.addReferentToZoneBenevole = (req, res, next) => {
       res.status(200).json({
         message: "Référent ajouté à la zone avec succès",
         idZoneBenevole: zone._id,
-        zoneName: zone.nom_zone_benevole
+        zoneName: zone.nom_zone_benevole,
       });
     })
     .catch((error) => {
@@ -445,18 +469,18 @@ exports.removeReferentFromZoneBenevole = async (req, res) => {
     // Enregistrez les modifications apportées à la zone plan
     await zoneBenevole.save();
 
-    res.status(200).json({ message: "Référent supprimé de la zone bénévole avec succès" });
+    res
+      .status(200)
+      .json({ message: "Référent supprimé de la zone bénévole avec succès" });
   } catch (error) {
     console.error(
       "Une erreur s'est produite lors de la suppression du référent de la zone bénévole :",
       error
     );
-    res
-      .status(500)
-      .json({
-        error:
-          "Une erreur s'est produite lors de la suppression du référent de la zone bénévole.",
-      });
+    res.status(500).json({
+      error:
+        "Une erreur s'est produite lors de la suppression du référent de la zone bénévole.",
+    });
   }
 };
 
@@ -481,25 +505,36 @@ async function trouverOuCreerZoneBenevole(nomZoneBenevole, idZone, date) {
   }
 
   return ZoneBenevole;
-};
-
+}
 
 exports.trouverZoneParJeuId = async (req, res) => {
   const jeuId = req.params.jeuId;
 
   try {
-      // Trouver la zone qui contient l'ID du jeu dans sa liste de jeux
-      const zone = await ZoneBenevole.findOne({ liste_jeux: jeuId }).populate('liste_jeux', 'nom_jeu');
+    // Trouver la zone qui contient l'ID du jeu dans sa liste de jeux
+    const zone = await ZoneBenevole.findOne({ liste_jeux: jeuId }).populate(
+      "liste_jeux",
+      "nom_jeu"
+    );
 
-      if (!zone) {
-          return res.status(404).json({ message: "Aucune zone trouvée pour ce jeu" });
-      }
+    if (!zone) {
+      return res
+        .status(404)
+        .json({ message: "Aucune zone trouvée pour ce jeu" });
+    }
 
-      // Renvoyer le nom de la zone trouvée
-      res.status(200).json({ nom_zone: zone.nom_zone_benevole, jeux: zone.liste_jeux });
+    // Renvoyer le nom de la zone trouvée
+    res
+      .status(200)
+      .json({ nom_zone: zone.nom_zone_benevole, jeux: zone.liste_jeux });
   } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: "Erreur lors de la recherche de la zone pour le jeu", error });
+    console.error(error);
+    res
+      .status(500)
+      .json({
+        message: "Erreur lors de la recherche de la zone pour le jeu",
+        error,
+      });
   }
 };
 
@@ -510,12 +545,12 @@ exports.getJeuxByZone = async (req, res) => {
 
     // Trouvez la zone et peuplez la liste complète des jeux
     const zoneWithJeux = await ZoneBenevole.findById(idZone)
-      .populate('liste_jeux') // Retirer le deuxième argument pour obtenir tous les champs
+      .populate("liste_jeux") // Retirer le deuxième argument pour obtenir tous les champs
       .exec();
 
     // Vérifiez si la zone a été trouvée
     if (!zoneWithJeux) {
-      return res.status(404).json({ message: 'Zone not found' });
+      return res.status(404).json({ message: "Zone not found" });
     }
 
     // Répondez avec les jeux associés à la zone, incluant tous leurs attributs
@@ -525,6 +560,7 @@ exports.getJeuxByZone = async (req, res) => {
     res.status(500).json({ message: 'Error fetching games by zone', error });
   }
 };
+
 
 exports.getZoneByBenevole = async (req, res) => {
   try {
