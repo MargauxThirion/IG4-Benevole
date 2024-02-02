@@ -108,7 +108,7 @@ exports.checkAndDeleteFlexible = async (req, res) => {
       // Supprimez chaque instance de Flexible avec horaire vide
       const deletedFlexibles = [];
       for (const flexible of flexiblesToDelete) {
-        await Flexible.findByIdAndRemove(flexible._id);
+        await Flexible.findOneAndDelete({ _id: flexible._id });
         deletedFlexibles.push(flexible._id);
       }
   

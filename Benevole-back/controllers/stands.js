@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const Stands = require("../models/stands");
 const Benevole = require("../models/benevole");
 const Festival = require("../models/festival");
+const ZoneBenevole = require("../models/zoneBenevole");
 
 exports.createStands = (req, res, next) => {
   const { referents, nom_stand, description, horaireCota, date } = req.body;
@@ -39,6 +40,26 @@ exports.getOneStands = (req, res, next) => {
     .catch((error) => {
       res.status(404).json({ error: error });
     });
+};
+
+exports.getStandsByReferent = async (req, res) => {
+  try {
+    const referentId = req.params.id;
+    const referent = await Benevole.findById(referentId);
+
+    if (!referent) {
+      return res.status(404).json({ message: "Référent non trouvé" });
+    }
+
+    const stands = await Stands.find({ referents: referentId })
+    .populate("referents", "pseudo")
+    .populate("horaireCota.liste_benevole", "pseudo")
+
+    res.status(200).json(stands);
+  } catch (error) {
+    console.error("Erreur lors de la récupération des stands:", error); // Log de l'erreur pour le débogage
+    res.status(500).json({ message: "Erreur lors de la récupération des stands", error: error.message });
+  }
 };
 
 exports.getStandsByDate = (req, res, next) => {
@@ -134,75 +155,99 @@ exports.addBenevoleToHoraire = async (req, res, next) => {
       return res.status(404).json({ message: "Horaire non trouvé" });
     }
 
-    const dateEvenement = standSpecifique.date;
     const horaireSpecifique = standSpecifique.horaireCota.find(h => h._id.toString() === idHoraire);
     
     if (!horaireSpecifique) {
       return res.status(404).json({ message: "Horaire spécifique non trouvé dans le stand" });
     }
-    
-    const heureEvenement = horaireSpecifique.heure;
-    const capaciteMaximale = horaireSpecifique.nb_benevole;
 
-    // Vérifier si le bénévole est déjà inscrit à un autre stand pour le même créneau horaire à la même date
-    const stands = await Stands.find({
+    const dateEvenement = standSpecifique.date;
+    const heureEvenement = horaireSpecifique.heure;
+
+    // Vérifier si le bénévole est déjà inscrit à un autre stand ou zone pour le même créneau horaire à la même date
+    const estDejaInscritDansStand = await Stands.findOne({
       date: dateEvenement,
-      "horaireCota.heure": heureEvenement,
-      "horaireCota.liste_benevole": idBenevole
+      horaireCota: {
+        $elemMatch: {
+          heure: heureEvenement,
+          liste_benevole: idBenevole
+        }
+      }
     });
 
-    if (stands.length > 0) {
-      return res.status(400).json({ message: "Le bénévole est déjà inscrit à un autre stand pour le même créneau horaire à la même date." });
-    } else if (horaireSpecifique.liste_benevole.includes(idBenevole)) {
-      return res.status(400).json({ message: "Le bénévole est déjà inscrit à ce stand pour le même créneau horaire." });
-    } else if (horaireSpecifique.liste_benevole.length >= capaciteMaximale) {
-      return res.status(400).json({ message: "Le créneau horaire est déjà complet, la capacité maximale est atteinte." });
+    const estDejaInscritDansZone = await ZoneBenevole.findOne({
+      "horaireCota": {
+        $elemMatch: {
+          heure: heureEvenement,
+          liste_benevole: idBenevole
+        }
+      }
+    });
+
+    if (estDejaInscritDansStand || estDejaInscritDansZone) {
+      return res.status(400).json({ message: "Le bénévole est déjà inscrit à un stand ou une zone pour le même créneau horaire à la même date." });
     }
 
     // Ajouter le bénévole à l'horaire spécifique dans le stand actuel
-    const updatedStand = await Stands.findOneAndUpdate(
-      { "horaireCota._id": idHoraire },
-      { $addToSet: { "horaireCota.$.liste_benevole": idBenevole } },
-      { new: true }
-    );
+    horaireSpecifique.liste_benevole.push(idBenevole);
+    await standSpecifique.save();
 
-    res.status(200).json(updatedStand);
+    res.status(200).json({ message: "Bénévole ajouté au stand avec succès", stand: standSpecifique });
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    console.error("Erreur lors de l'ajout du bénévole au stand", error);
+    res.status(500).json({ error: "Une erreur s'est produite lors de l'ajout du bénévole au stand" });
   }
 };
 
-exports.addFlexibleToStand = (req, res, next) => {
-  const { horaire, standId, idBenevole } = req.params; // Les informations d'horaire et de stand que vous avez fournies
 
-  // Recherchez le stand spécifique en utilisant l'ID du stand
-  Stands.findById(standId)
-    .then(stand => {
-      if (!stand) {
-        return res.status(404).json({ message: "Stand non trouvé" });
-      }
 
-      // Trouvez l'horaire spécifique dans le stand en utilisant l'heure
-      const horaireSpecifique = stand.horaireCota.find(h => h.heure === horaire);
-      if (!horaireSpecifique) {
-        return res.status(404).json({ message: "Horaire spécifique non trouvé dans le stand" });
-      }
+exports.addFlexibleToStand = async (req, res, next) => {
+  const { horaire, standId, idBenevole } = req.params;
 
-      // Vérifiez s'il y a de la place disponible dans cet horaire spécifique
-      if (horaireSpecifique.liste_benevole.length >= horaireSpecifique.nb_benevole) {
-        return res.status(400).json({ message: "Le créneau horaire est complet, la capacité maximale est atteinte." });
-      } else {
-        // Inscrivez le flexible à cet horaire spécifique
-        horaireSpecifique.liste_benevole.push(idBenevole); // Supposons que flexibleId soit l'ID du flexible
+  try {
+    const stand = await Stands.findById(standId);
+    if (!stand) {
+      return res.status(404).json({ message: "Stand non trouvé" });
+    }
 
-        // Enregistrez les modifications dans la base de données
-        stand.save()
-          .then(updatedStand => res.status(200).json(updatedStand))
-          .catch(error => res.status(400).json({ error: error.message }));
-      }
-    })
-    .catch(error => res.status(400).json({ error: error.message }));
+    const horaireSpecifique = stand.horaireCota.find(h => h.heure === horaire);
+    if (!horaireSpecifique) {
+      return res.status(404).json({ message: "Horaire spécifique non trouvé dans le stand" });
+    }
+
+    if (horaireSpecifique.liste_benevole.length >= horaireSpecifique.nb_benevole) {
+      return res.status(400).json({ message: "Le créneau horaire est complet." });
+    }
+
+    // Vérifier si le bénévole est déjà inscrit à un autre stand
+    const autreStand = await Stands.findOne({
+      "horaireCota.heure": horaire,
+      "horaireCota.liste_benevole": idBenevole
+    });
+    if (autreStand) {
+      return res.status(400).json({ message: "Le bénévole est déjà inscrit à un autre stand pour le même créneau horaire." });
+    }
+
+    // Vérifier si le bénévole est inscrit à une zoneBenevole
+    const zoneBenevole = await ZoneBenevole.findOne({
+      "horaireCota.heure": horaire,
+      "horaireCota.liste_benevole": idBenevole
+    });
+    if (zoneBenevole) {
+      return res.status(400).json({ message: "Le bénévole est inscrit à une zoneBenevole pour le même créneau horaire." });
+    }
+
+    // Ajouter le bénévole à l'horaire spécifique du stand
+    horaireSpecifique.liste_benevole.push(idBenevole);
+    await stand.save();
+
+    res.status(200).json({ message: "Bénévole ajouté avec succès au stand." });
+
+  } catch (error) {
+    res.status(500).json({ message: "Erreur serveur", error: error.message });
+  }
 };
+
 
 exports.addReferentToStand = (req, res, next) => {
   const { idStand, idBenevole } = req.params;
@@ -345,21 +390,5 @@ exports.getStandsByBenevole = async (req, res) => {
   }
 };
 
-exports.getStandsByReferent = async (req, res) => {
-  try {
-    const referentId = req.params.id;
-    const referent = await Benevole.findById(referentId);
 
-    if (!referent) {
-      return res.status(404).json({ message: "Référent non trouvé" });
-    }
-
-    const stands = await Stands.find({ referents: referentId });
-
-    res.status(200).json(stands);
-  } catch (error) {
-    console.error("Erreur lors de la récupération des stands:", error); // Log de l'erreur pour le débogage
-    res.status(500).json({ message: "Erreur lors de la récupération des stands", error: error.message });
-  }
-};
 

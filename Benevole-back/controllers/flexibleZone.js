@@ -100,19 +100,19 @@ exports.removeOneFlexibleZoneById = async (req, res) => {
     }
 };
 
-exports.checkAndDeleteFlexible = async (req, res) => {
+exports.checkAndDeleteFlexibleZone = async (req, res) => {
     try {
-      // Récupérez tous les flexibles avec horaire vide
-      const flexiblesToDelete = await FlexibleZone.find({ horaire: [] });
+      // Récupérez tous les flexibleZones avec horaire vide
+      const flexibleZonesToDelete = await FlexibleZone.find({ horaire: [] });
   
-      // Supprimez chaque instance de Flexible avec horaire vide
-      const deletedFlexibles = [];
-      for (const flexible of flexiblesToDelete) {
-        await FlexibleZone.findByIdAndRemove(flexible._id);
-        deletedFlexibles.push(flexible._id);
+      // Supprimez chaque instance de FlexibleZone avec horaire vide
+      const deletedFlexibleZones = [];
+      for (const flexibleZones of flexibleZonesToDelete) {
+        await FlexibleZone.findOneAndDelete({ _id: flexibleZones._id });
+        deletedFlexibleZones.push(flexibleZones._id);
       }
   
-      res.status(200).json({ message: 'Opération réussie', deletedFlexibles });
+      res.status(200).json({ message: 'Opération réussie', deletedFlexibleZones });
     } catch (error) {
       res.status(500).json({ message: 'Erreur lors de l\'opération', error: error.message });
     }

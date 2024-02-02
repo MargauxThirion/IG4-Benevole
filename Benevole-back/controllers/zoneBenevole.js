@@ -3,6 +3,7 @@ const ZoneBenevole = require("../models/zoneBenevole");
 const Jeu = require("../models/jeux");
 const Benevole = require("../models/benevole");
 const Festival = require("../models/festival");
+const Stands = require("../models/stands");
 const xlsx = require("xlsx");
 
 exports.importZoneFromExcelJour1 = async (req, res) => {
@@ -276,31 +277,109 @@ exports.getZonesByDate = (req, res, next) => {
 };
 
 exports.addBenevoleToHoraire = async (req, res, next) => {
-  const { benevoleId, horaireId } = req.body;
-  ZoneBenevole.findOneAndUpdate(
-    { "horaireCota._id": horaireId },
-    { $addToSet: { "horaireCota.$.liste_benevole": benevoleId } },
-    { new: true }
-  )
-    .then((zone) => {
-      if (!zone) {
-        return res.status(404).json({ message: "Zone non trouvée" });
+  const { idHoraire, idBenevole } = req.params;
+
+  try {
+    // Trouver l'horaire spécifique pour obtenir l'heure et la date
+    const zoneSpecifique = await ZoneBenevole.findOne({ "horaireCota._id": idHoraire });
+    if (!zoneSpecifique) {
+      return res.status(404).json({ message: "Horaire non trouvé dans la zone" });
+    }
+
+    const horaireSpecifique = zoneSpecifique.horaireCota.find(h => h._id.toString() === idHoraire);
+    if (!horaireSpecifique) {
+      return res.status(404).json({ message: "Horaire spécifique non trouvé dans la zone" });
+    }
+
+    const dateEvenement = zoneSpecifique.date;
+    const heureEvenement = horaireSpecifique.heure;
+
+    // Vérifier si le bénévole est déjà inscrit à un autre stand ou zone pour le même créneau horaire à la même date
+    const estDejaInscritDansStand = await Stands.findOne({
+      date: dateEvenement,
+      horaireCota: {
+        $elemMatch: {
+          heure: heureEvenement,
+          liste_benevole: idBenevole
+        }
       }
-      res.status(200).json({ message: "Bénévole ajouté à la zone", zone });
-    })
-    .catch((error) => {
-      console.error(
-        "Une erreur s'est produite lors de l'ajout du bénévole à la zone",
-        error
-      );
-      res
-        .status(500)
-        .json({
-          error:
-            "Une erreur s'est produite lors de l'ajout du bénévole à la zone",
-        });
     });
+
+    const estDejaInscritDansZone = await ZoneBenevole.findOne({
+      "horaireCota": {
+        $elemMatch: {
+          heure: heureEvenement,
+          liste_benevole: idBenevole
+        }
+      },
+      _id: { $ne: zoneSpecifique._id } // Exclure la zone actuelle
+    });
+
+    if (estDejaInscritDansStand || estDejaInscritDansZone) {
+      return res.status(400).json({ message: "Le bénévole est déjà inscrit à un stand ou une zone pour le même créneau horaire à la même date." });
+    }
+
+    // Ajouter le bénévole à l'horaire spécifique dans la zone actuelle
+    horaireSpecifique.liste_benevole.push(idBenevole);
+    await zoneSpecifique.save();
+
+    res.status(200).json({ message: "Bénévole ajouté à la zone avec succès", zone: zoneSpecifique });
+  } catch (error) {
+    console.error("Erreur lors de l'ajout du bénévole à la zone", error);
+    res.status(500).json({ error: "Une erreur s'est produite lors de l'ajout du bénévole à la zone" });
+  }
 };
+
+
+
+exports.addFlexibleToZone = async (req, res, next) => {
+  const { horaire, zoneId, idBenevole } = req.params; // Les informations d'horaire et de zoneBenevole que vous avez fournies
+
+  try {
+    // Recherchez le zoneBenevole spécifique en utilisant l'ID du zoneBenevole
+    const zone = await ZoneBenevole.findById(zoneId);
+    if (!zone) {
+      return res.status(404).json({ message: "ZoneBenevole non trouvé" });
+    }
+
+    // Trouvez l'horaire spécifique dans le zoneBenevole en utilisant l'heure
+    const horaireSpecifique = zone.horaireCota.find(h => h.heure === horaire);
+    if (!horaireSpecifique) {
+      return res.status(404).json({ message: "Horaire spécifique non trouvé dans le zoneBenevole" });
+    }
+
+    // Vérifiez si le bénévole est déjà inscrit à un autre stand ou zone pour le même créneau horaire
+    const estDejaInscrit = await ZoneBenevole.findOne({
+      "horaireCota.heure": horaire,
+      "horaireCota.liste_benevole": idBenevole,
+      _id: { $ne: zone._id } // Exclure la zone actuelle
+    }) || await Stands.findOne({
+      "horaireCota.heure": horaire,
+      "horaireCota.liste_benevole": idBenevole
+    });
+
+    if (estDejaInscrit) {
+      return res.status(400).json({ message: "Le bénévole est déjà inscrit à un autre stand ou zone pour le même créneau horaire." });
+    }
+
+    // Vérifiez s'il y a de la place disponible dans cet horaire spécifique
+    if (horaireSpecifique.liste_benevole.length >= horaireSpecifique.nb_benevole) {
+      return res.status(400).json({ message: "Le créneau horaire est complet, la capacité maximale est atteinte." });
+    }
+
+    // Inscrivez le flexible à cet horaire spécifique
+    horaireSpecifique.liste_benevole.push(idBenevole);
+
+    // Enregistrez les modifications dans la base de données
+    const updatedzone = await zone.save();
+    res.status(200).json(updatedzone);
+  } catch (error) {
+    console.error("Erreur lors de l'inscription du bénévole à la zone", error);
+    res.status(400).json({ error: error.message });
+  }
+};
+
+
 
 exports.addReferentToZoneBenevole = (req, res, next) => {
   const { idZoneBenevole, benevoleId } = req.params;
@@ -446,3 +525,22 @@ exports.getJeuxByZone = async (req, res) => {
     res.status(500).json({ message: 'Error fetching games by zone', error });
   }
 };
+
+exports.getZoneByBenevole = async (req, res) => {
+  try {
+    const benevoleId = req.params.id; // Utilisation directe de req.params.id
+
+    // Recherche des zones contenant l'ID du bénévole dans leur horaireCota
+    const zones = await ZoneBenevole.find({ "horaireCota.liste_benevole": benevoleId });
+
+    if (zones.length === 0) {
+      return res.status(404).json({ message: "Aucune zone trouvée pour ce bénévole" });
+    }
+
+    res.status(200).json(zones);
+  } catch (error) {
+    console.error("Erreur lors de la récupération des zones:", error);
+    res.status(500).json({ message: "Erreur lors de la récupération des zones", error: error.message });
+  }
+};
+
