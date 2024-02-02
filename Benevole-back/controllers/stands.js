@@ -199,8 +199,6 @@ exports.addBenevoleToHoraire = async (req, res, next) => {
   }
 };
 
-
-
 exports.addFlexibleToStand = async (req, res, next) => {
   const { horaire, standId, idBenevole } = req.params;
 
@@ -219,25 +217,35 @@ exports.addFlexibleToStand = async (req, res, next) => {
       return res.status(400).json({ message: "Le créneau horaire est complet." });
     }
 
-    // Vérifier si le bénévole est déjà inscrit à un autre stand
+    const dateEvenement = stand.date;
+
+    // Vérifier si le bénévole est déjà inscrit à un autre stand ou zone pour le même créneau horaire à la même date
     const autreStand = await Stands.findOne({
-      "horaireCota.heure": horaire,
-      "horaireCota.liste_benevole": idBenevole
+      date: dateEvenement,
+      "horaireCota": {
+        $elemMatch: {
+          heure: horaire,
+          liste_benevole: idBenevole
+        }
+      }
     });
     if (autreStand) {
-      return res.status(400).json({ message: "Le bénévole est déjà inscrit à un autre stand pour le même créneau horaire." });
+      return res.status(400).json({ message: "Le bénévole est déjà inscrit à un autre stand pour le même créneau horaire à la même date." });
     }
 
-    // Vérifier si le bénévole est inscrit à une zoneBenevole
     const zoneBenevole = await ZoneBenevole.findOne({
-      "horaireCota.heure": horaire,
-      "horaireCota.liste_benevole": idBenevole
+      date: dateEvenement,
+      "horaireCota": {
+        $elemMatch: {
+          heure: horaire,
+          liste_benevole: idBenevole
+        }
+      }
     });
     if (zoneBenevole) {
-      return res.status(400).json({ message: "Le bénévole est inscrit à une zoneBenevole pour le même créneau horaire." });
+      return res.status(400).json({ message: "Le bénévole est inscrit à une zoneBenevole pour le même créneau horaire à la même date." });
     }
 
-    // Ajouter le bénévole à l'horaire spécifique du stand
     horaireSpecifique.liste_benevole.push(idBenevole);
     await stand.save();
 

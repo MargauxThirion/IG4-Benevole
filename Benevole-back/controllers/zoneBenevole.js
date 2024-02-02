@@ -354,47 +354,51 @@ exports.addBenevoleToHoraire = async (req, res, next) => {
   }
 };
 
-
-
 exports.addFlexibleToZone = async (req, res, next) => {
   const { horaire, zoneId, idBenevole } = req.params; // Les informations d'horaire et de zoneBenevole que vous avez fournies
 
   try {
-    // Recherchez le zoneBenevole spécifique en utilisant l'ID du zoneBenevole
     const zone = await ZoneBenevole.findById(zoneId);
     if (!zone) {
       return res.status(404).json({ message: "ZoneBenevole non trouvé" });
     }
 
-    // Trouvez l'horaire spécifique dans le zoneBenevole en utilisant l'heure
     const horaireSpecifique = zone.horaireCota.find(h => h.heure === horaire);
     if (!horaireSpecifique) {
       return res.status(404).json({ message: "Horaire spécifique non trouvé dans le zoneBenevole" });
     }
 
-    // Vérifiez si le bénévole est déjà inscrit à un autre stand ou zone pour le même créneau horaire
-    const estDejaInscrit = await ZoneBenevole.findOne({
-      "horaireCota.heure": horaire,
-      "horaireCota.liste_benevole": idBenevole,
+    // Vérifiez si le bénévole est déjà inscrit à un autre stand ou zone pour le même créneau horaire à la même date
+    const dateEvenement = zone.date;
+    const conflitDansStand = await Stands.findOne({
+      date: dateEvenement,
+      "horaireCota": {
+        $elemMatch: {
+          heure: horaire,
+          liste_benevole: idBenevole
+        }
+      }
+    });
+    const conflitDansZone = await ZoneBenevole.findOne({
+      date: dateEvenement,
+      "horaireCota": {
+        $elemMatch: {
+          heure: horaire,
+          liste_benevole: idBenevole
+        }
+      },
       _id: { $ne: zone._id } // Exclure la zone actuelle
-    }) || await Stands.findOne({
-      "horaireCota.heure": horaire,
-      "horaireCota.liste_benevole": idBenevole
     });
 
-    if (estDejaInscrit) {
-      return res.status(400).json({ message: "Le bénévole est déjà inscrit à un autre stand ou zone pour le même créneau horaire." });
+    if (conflitDansStand || conflitDansZone) {
+      return res.status(400).json({ message: "Le bénévole est déjà inscrit à un autre stand ou zone pour le même créneau horaire à la même date." });
     }
 
-    // Vérifiez s'il y a de la place disponible dans cet horaire spécifique
     if (horaireSpecifique.liste_benevole.length >= horaireSpecifique.nb_benevole) {
       return res.status(400).json({ message: "Le créneau horaire est complet, la capacité maximale est atteinte." });
     }
 
-    // Inscrivez le flexible à cet horaire spécifique
     horaireSpecifique.liste_benevole.push(idBenevole);
-
-    // Enregistrez les modifications dans la base de données
     const updatedzone = await zone.save();
     res.status(200).json(updatedzone);
   } catch (error) {
@@ -402,7 +406,6 @@ exports.addFlexibleToZone = async (req, res, next) => {
     res.status(400).json({ error: error.message });
   }
 };
-
 
 
 exports.addReferentToZoneBenevole = (req, res, next) => {
