@@ -275,30 +275,65 @@ exports.getZonesByDate = (req, res, next) => {
 };
 
 exports.addBenevoleToHoraire = async (req, res, next) => {
-  const { benevoleId, horaireId } = req.body;
-  ZoneBenevole.findOneAndUpdate(
-    { "horaireCota._id": horaireId },
-    { $addToSet: { "horaireCota.$.liste_benevole": benevoleId } },
-    { new: true }
-  )
-    .then((zone) => {
-      if (!zone) {
-        return res.status(404).json({ message: "Zone non trouvée" });
-      }
-      res.status(200).json({ message: "Bénévole ajouté à la zone", zone });
-    })
-    .catch((error) => {
-      console.error(
-        "Une erreur s'est produite lors de l'ajout du bénévole à la zone",
-        error
-      );
-      res
-        .status(500)
-        .json({
-          error:
-            "Une erreur s'est produite lors de l'ajout du bénévole à la zone",
-        });
+  const { idHoraire, idBenevole } = req.params;
+
+  try {
+    // Trouver la zone bénévole spécifique pour obtenir la date et les informations de l'horaire
+    const zoneSpecifique = await ZoneBenevole.findOne({ "horaireCota._id": idHoraire });
+    console.log("zoneSpecifique : ", zoneSpecifique);
+
+    if (!zoneSpecifique) {
+      return res.status(404).json({ message: "Zone bénévole non trouvée" });
+    }
+
+    const dateEvenement = zoneSpecifique.date;
+    const horaireSpecifique = zoneSpecifique.horaireCota.find((h) => h._id.toString() === idHoraire);
+    console.log("horaireSpecifique : ", horaireSpecifique);
+
+    if (!horaireSpecifique) {
+      return res.status(404).json({ message: "Horaire spécifique non trouvé dans la zone bénévole" });
+    }
+
+    // Récupérer la capacité maximale de la zone bénévole à partir de la base de données
+    const zoneAvecCapacite = await ZoneBenevole.findById(zoneSpecifique._id);
+
+    if (!zoneAvecCapacite || !zoneAvecCapacite.horaireCota || !zoneAvecCapacite.horaireCota.length) {
+      return res.status(400).json({ message: "Capacité maximale de la zone bénévole introuvable" });
+    }
+
+    const capaciteMaximale = zoneAvecCapacite.horaireCota.find((h) => h._id.toString() === idHoraire)?.nb_benevole;
+    console.log("capacite maximale : ", capaciteMaximale);
+
+    if (typeof capaciteMaximale !== 'number' || isNaN(capaciteMaximale)) {
+      return res.status(400).json({ message: "Capacité maximale de la zone bénévole non valide" });
+    }
+
+    // Vérifier si le bénévole est déjà inscrit à cette zone pour le même créneau horaire à la même date
+    const zones = await ZoneBenevole.find({
+      date: dateEvenement,
+      "horaireCota.heure": horaireSpecifique.heure,
+      "horaireCota.liste_benevole": idBenevole
     });
+
+    if (zones.length > 0) {
+      return res.status(400).json({ message: "Le bénévole est déjà inscrit à une autre zone bénévole pour le même créneau horaire à la même date." });
+    } else if (horaireSpecifique.liste_benevole.includes(idBenevole)) {
+      return res.status(400).json({ message: "Le bénévole est déjà inscrit à cette zone bénévole pour le même créneau horaire." });
+    } else if (horaireSpecifique.liste_benevole.length >= capaciteMaximale) {
+      return res.status(400).json({ message: "Le créneau horaire de la zone bénévole est déjà complet, la capacité maximale est atteinte." });
+    }
+
+    // Ajouter le bénévole à l'horaire spécifique dans la zone bénévole actuelle
+    const updatedZone = await ZoneBenevole.findOneAndUpdate(
+      { "horaireCota._id": idHoraire },
+      { $addToSet: { "horaireCota.$.liste_benevole": idBenevole } },
+      { new: true }
+    );
+
+    res.status(200).json(updatedZone);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
 };
 
 exports.addReferentToZoneBenevole = (req, res, next) => {
