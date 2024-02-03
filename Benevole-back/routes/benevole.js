@@ -11,9 +11,8 @@ router.put('/:pseudo', benevoleCtrl.modifyBenevole);
 router.get('/id/:id', benevoleCtrl.getBenevoleById);
 router.get('/check-pseudo/:pseudo', benevoleCtrl.checkPseudoExists);
 router.get('/non-referent', benevoleCtrl.getNonReferentBenevoles);
-// router.delete('/:id', benevoleCtrl.deleteBenevole);
+router.put('/promote/:id', benevoleCtrl.promoteToAdmin);
 router.get('/referent', benevoleCtrl.getAllBenevoleReferent);
-//router.get('/', benevoleCtrl.getAllBenevole);
 router.get('/protected', authMiddleware, (req, res) => {
     res.json({ message: 'Accès autorisé à la ressource protégée' });
   });

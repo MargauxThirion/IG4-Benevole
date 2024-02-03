@@ -281,6 +281,13 @@ async function checkPseudoExists(req, res) {
   }
 }
 
+async function promoteToAdmin(req, res, next) {
+  Benevole.updateOne({ _id: req.params.id }, { admin: true })
+    .then(() => res.status(200).json({ message: 'Bénévole promu admin' }))
+    .catch(error => res.status(400).json({ error }));
+};
+
+
 module.exports = {
   signup,
   login,
@@ -292,4 +299,5 @@ module.exports = {
   deleteBenevole,
   getAllBenevoleReferent,
   checkPseudoExists,
+  promoteToAdmin
 };
