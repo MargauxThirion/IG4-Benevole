@@ -6,7 +6,13 @@ exports.createFestival = async (req, res, next) => {
 
   try {
     // Création du festival
-    const festival = new Festival({ nom, lieu, description, date_debut, date_fin });
+    const festival = new Festival({
+      nom,
+      lieu,
+      description,
+      date_debut,
+      date_fin,
+    });
     await festival.save();
 
     // Création du premier stand pour la date de début du festival
@@ -31,7 +37,10 @@ exports.createFestival = async (req, res, next) => {
 
     res.status(201).json({ message: "Festival et stands associés créés !" });
   } catch (error) {
-    console.error("Erreur lors de la création du festival et des stands", error);
+    console.error(
+      "Erreur lors de la création du festival et des stands",
+      error
+    );
     res.status(400).json({ error });
   }
 };
@@ -57,17 +66,18 @@ exports.getOneFestival = (req, res, next) => {
 };
 
 exports.getLatestFestival = (req, res, next) => {
-    // Trouvez le festival avec la date de fin la plus lointaine
-    Festival.findOne().sort({ date_fin: -1 })
-    .then(latestFestival => {
-        if (latestFestival) {
-            res.status(200).json(latestFestival);
-        } else {
-            res.status(404).json({ message: 'Aucun festival trouvé' });
-        }
+  // Trouvez le festival avec la date de fin la plus lointaine
+  Festival.findOne()
+    .sort({ date_fin: -1 })
+    .then((latestFestival) => {
+      if (latestFestival) {
+        res.status(200).json(latestFestival);
+      } else {
+        res.status(404).json({ message: "Aucun festival trouvé" });
+      }
     })
-    .catch(error => {
-        res.status(500).json({ error: error });
+    .catch((error) => {
+      res.status(500).json({ error: error });
     });
 };
 
@@ -95,11 +105,9 @@ exports.modifyFestival = async (req, res) => {
       "Une erreur s'est produite lors de la modification du festival",
       error
     );
-    res
-      .status(500)
-      .json({
-        error: "Une erreur s'est produite lors de la modification du festival",
-      });
+    res.status(500).json({
+      error: "Une erreur s'est produite lors de la modification du festival",
+    });
   }
 };
 

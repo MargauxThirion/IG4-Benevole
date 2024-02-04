@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 const Stands = require("../models/stands");
 const Benevole = require("../models/benevole");
 const Festival = require("../models/festival");
@@ -52,13 +52,18 @@ exports.getStandsByReferent = async (req, res) => {
     }
 
     const stands = await Stands.find({ referents: referentId })
-    .populate("referents", "pseudo")
-    .populate("horaireCota.liste_benevole", "pseudo")
+      .populate("referents", "pseudo")
+      .populate("horaireCota.liste_benevole", "pseudo");
 
     res.status(200).json(stands);
   } catch (error) {
     console.error("Erreur lors de la récupération des stands:", error); // Log de l'erreur pour le débogage
-    res.status(500).json({ message: "Erreur lors de la récupération des stands", error: error.message });
+    res
+      .status(500)
+      .json({
+        message: "Erreur lors de la récupération des stands",
+        error: error.message,
+      });
   }
 };
 
@@ -126,11 +131,9 @@ exports.deleteStand = async (req, res, next) => {
     res.status(200).json({ message: "Stand supprimé !" });
   } catch (error) {
     console.error("Erreur lors de la suppression du stand :", error);
-    res
-      .status(500)
-      .json({
-        error: "Une erreur s'est produite lors de la suppression du stand.",
-      });
+    res.status(500).json({
+      error: "Une erreur s'est produite lors de la suppression du stand.",
+    });
   }
 };
 
@@ -149,16 +152,22 @@ exports.addBenevoleToHoraire = async (req, res, next) => {
 
   try {
     // Trouver l'horaire spécifique pour obtenir l'heure, la date et la capacité
-    const standSpecifique = await Stands.findOne({ "horaireCota._id": idHoraire });
-    
+    const standSpecifique = await Stands.findOne({
+      "horaireCota._id": idHoraire,
+    });
+
     if (!standSpecifique) {
       return res.status(404).json({ message: "Horaire non trouvé" });
     }
 
-    const horaireSpecifique = standSpecifique.horaireCota.find(h => h._id.toString() === idHoraire);
-    
+    const horaireSpecifique = standSpecifique.horaireCota.find(
+      (h) => h._id.toString() === idHoraire
+    );
+
     if (!horaireSpecifique) {
-      return res.status(404).json({ message: "Horaire spécifique non trouvé dans le stand" });
+      return res
+        .status(404)
+        .json({ message: "Horaire spécifique non trouvé dans le stand" });
     }
 
     const dateEvenement = standSpecifique.date;
@@ -170,32 +179,46 @@ exports.addBenevoleToHoraire = async (req, res, next) => {
       horaireCota: {
         $elemMatch: {
           heure: heureEvenement,
-          liste_benevole: idBenevole
-        }
-      }
+          liste_benevole: idBenevole,
+        },
+      },
     });
 
     const estDejaInscritDansZone = await ZoneBenevole.findOne({
-      "horaireCota": {
+      horaireCota: {
         $elemMatch: {
           heure: heureEvenement,
-          liste_benevole: idBenevole
-        }
-      }
+          liste_benevole: idBenevole,
+        },
+      },
     });
 
     if (estDejaInscritDansStand || estDejaInscritDansZone) {
-      return res.status(400).json({ message: "Le bénévole est déjà inscrit à un stand ou une zone pour le même créneau horaire à la même date." });
+      return res
+        .status(400)
+        .json({
+          message:
+            "Le bénévole est déjà inscrit à un stand ou une zone pour le même créneau horaire à la même date.",
+        });
     }
 
     // Ajouter le bénévole à l'horaire spécifique dans le stand actuel
     horaireSpecifique.liste_benevole.push(idBenevole);
     await standSpecifique.save();
 
-    res.status(200).json({ message: "Bénévole ajouté au stand avec succès", stand: standSpecifique });
+    res
+      .status(200)
+      .json({
+        message: "Bénévole ajouté au stand avec succès",
+        stand: standSpecifique,
+      });
   } catch (error) {
     console.error("Erreur lors de l'ajout du bénévole au stand", error);
-    res.status(500).json({ error: "Une erreur s'est produite lors de l'ajout du bénévole au stand" });
+    res
+      .status(500)
+      .json({
+        error: "Une erreur s'est produite lors de l'ajout du bénévole au stand",
+      });
   }
 };
 
@@ -208,13 +231,21 @@ exports.addFlexibleToStand = async (req, res, next) => {
       return res.status(404).json({ message: "Stand non trouvé" });
     }
 
-    const horaireSpecifique = stand.horaireCota.find(h => h.heure === horaire);
+    const horaireSpecifique = stand.horaireCota.find(
+      (h) => h.heure === horaire
+    );
     if (!horaireSpecifique) {
-      return res.status(404).json({ message: "Horaire spécifique non trouvé dans le stand" });
+      return res
+        .status(404)
+        .json({ message: "Horaire spécifique non trouvé dans le stand" });
     }
 
-    if (horaireSpecifique.liste_benevole.length >= horaireSpecifique.nb_benevole) {
-      return res.status(400).json({ message: "Le créneau horaire est complet." });
+    if (
+      horaireSpecifique.liste_benevole.length >= horaireSpecifique.nb_benevole
+    ) {
+      return res
+        .status(400)
+        .json({ message: "Le créneau horaire est complet." });
     }
 
     const dateEvenement = stand.date;
@@ -222,40 +253,48 @@ exports.addFlexibleToStand = async (req, res, next) => {
     // Vérifier si le bénévole est déjà inscrit à un autre stand ou zone pour le même créneau horaire à la même date
     const autreStand = await Stands.findOne({
       date: dateEvenement,
-      "horaireCota": {
+      horaireCota: {
         $elemMatch: {
           heure: horaire,
-          liste_benevole: idBenevole
-        }
-      }
+          liste_benevole: idBenevole,
+        },
+      },
     });
     if (autreStand) {
-      return res.status(400).json({ message: "Le bénévole est déjà inscrit à un autre stand pour le même créneau horaire à la même date." });
+      return res
+        .status(400)
+        .json({
+          message:
+            "Le bénévole est déjà inscrit à un autre stand pour le même créneau horaire à la même date.",
+        });
     }
 
     const zoneBenevole = await ZoneBenevole.findOne({
       date: dateEvenement,
-      "horaireCota": {
+      horaireCota: {
         $elemMatch: {
           heure: horaire,
-          liste_benevole: idBenevole
-        }
-      }
+          liste_benevole: idBenevole,
+        },
+      },
     });
     if (zoneBenevole) {
-      return res.status(400).json({ message: "Le bénévole est inscrit à une zoneBenevole pour le même créneau horaire à la même date." });
+      return res
+        .status(400)
+        .json({
+          message:
+            "Le bénévole est inscrit à une zoneBenevole pour le même créneau horaire à la même date.",
+        });
     }
 
     horaireSpecifique.liste_benevole.push(idBenevole);
     await stand.save();
 
     res.status(200).json({ message: "Bénévole ajouté avec succès au stand." });
-
   } catch (error) {
     res.status(500).json({ message: "Erreur serveur", error: error.message });
   }
 };
-
 
 exports.addReferentToStand = (req, res, next) => {
   const { idStand, idBenevole } = req.params;
@@ -329,12 +368,10 @@ exports.removeReferentFromStand = async (req, res) => {
       "Une erreur s'est produite lors de la suppression du référent du stand :",
       error
     );
-    res
-      .status(500)
-      .json({
-        error:
-          "Une erreur s'est produite lors de la suppression du référent du stand.",
-      });
+    res.status(500).json({
+      error:
+        "Une erreur s'est produite lors de la suppression du référent du stand.",
+    });
   }
 };
 
@@ -349,13 +386,15 @@ exports.getStandBothDate = async (req, res) => {
 
     const stands = await Stands.find();
 
-    const festivalDateDebutStr = festival.date_debut.toISOString().split('T')[0];
-    const festivalDateFinStr = festival.date_fin.toISOString().split('T')[0];
+    const festivalDateDebutStr = festival.date_debut
+      .toISOString()
+      .split("T")[0];
+    const festivalDateFinStr = festival.date_fin.toISOString().split("T")[0];
 
     const standMap = new Map();
 
-    stands.forEach(stand => {
-      const standDateStr = stand.date.toISOString().split('T')[0];
+    stands.forEach((stand) => {
+      const standDateStr = stand.date.toISOString().split("T")[0];
 
       if (!standMap.has(stand.nom_stand)) {
         standMap.set(stand.nom_stand, [standDateStr]);
@@ -368,15 +407,24 @@ exports.getStandBothDate = async (req, res) => {
     });
 
     const standsAvailableBothDays = Array.from(standMap)
-      .filter(([_, dates]) => dates.includes(festivalDateDebutStr) && dates.includes(festivalDateFinStr))
+      .filter(
+        ([_, dates]) =>
+          dates.includes(festivalDateDebutStr) &&
+          dates.includes(festivalDateFinStr)
+      )
       .map(([nom_stand, _]) => {
-        return stands.filter(stand => stand.nom_stand === nom_stand);
+        return stands.filter((stand) => stand.nom_stand === nom_stand);
       });
 
     res.status(200).json(standsAvailableBothDays.flat());
   } catch (error) {
     console.error("Erreur lors de la récupération des stands:", error); // Log de l'erreur pour le débogage
-    res.status(500).json({ message: "Erreur lors de la récupération des stands", error: error.message });
+    res
+      .status(500)
+      .json({
+        message: "Erreur lors de la récupération des stands",
+        error: error.message,
+      });
   }
 };
 
@@ -389,14 +437,18 @@ exports.getStandsByBenevole = async (req, res) => {
       return res.status(404).json({ message: "Bénévole non trouvé" });
     }
 
-    const stands = await Stands.find({ "horaireCota.liste_benevole": benevoleId });
+    const stands = await Stands.find({
+      "horaireCota.liste_benevole": benevoleId,
+    });
 
     res.status(200).json(stands);
   } catch (error) {
     console.error("Erreur lors de la récupération des stands:", error); // Log de l'erreur pour le débogage
-    res.status(500).json({ message: "Erreur lors de la récupération des stands", error: error.message });
+    res
+      .status(500)
+      .json({
+        message: "Erreur lors de la récupération des stands",
+        error: error.message,
+      });
   }
 };
-
-
-

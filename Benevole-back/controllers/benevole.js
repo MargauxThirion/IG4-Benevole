@@ -44,11 +44,9 @@ async function modifyBenevole(req, res) {
       "Une erreur s'est produite lors de la modification du bénévole",
       error
     );
-    res
-      .status(500)
-      .json({
-        error: "Une erreur s'est produite lors de la modification du bénévole",
-      });
+    res.status(500).json({
+      error: "Une erreur s'est produite lors de la modification du bénévole",
+    });
   }
 }
 
@@ -78,12 +76,10 @@ async function getAllBenevoleReferent(req, res) {
     const referentBenevoles = await Benevole.find({ referent: true });
     res.status(200).json(referentBenevoles);
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        error:
-          "Une erreur s'est produite lors de la récupération des bénévoles référents",
-      });
+    res.status(500).json({
+      error:
+        "Une erreur s'est produite lors de la récupération des bénévoles référents",
+    });
   }
 }
 
@@ -154,12 +150,10 @@ async function signup(req, res) {
       .status(201)
       .json({ message: "Inscription réussie", benevole: newBenevole });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        message: "Une erreur s'est produite lors de l'inscription",
-        error,
-      });
+    res.status(500).json({
+      message: "Une erreur s'est produite lors de l'inscription",
+      error,
+    });
   }
 }
 
@@ -199,12 +193,10 @@ async function login(req, res) {
     });
   } catch (error) {
     console.error("Error during login:", error);
-    res
-      .status(500)
-      .json({
-        message: "Une erreur s'est produite lors de la connexion",
-        error,
-      });
+    res.status(500).json({
+      message: "Une erreur s'est produite lors de la connexion",
+      error,
+    });
   }
 }
 
@@ -221,13 +213,11 @@ async function getBenevole(req, res) {
 
     res.json({ benevole });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        message:
-          "Une erreur s'est produite lors de la récupération des données utilisateur",
-        error,
-      });
+    res.status(500).json({
+      message:
+        "Une erreur s'est produite lors de la récupération des données utilisateur",
+      error,
+    });
   }
 }
 
@@ -245,13 +235,11 @@ async function getBenevoleById(req, res) {
 
     res.json({ pseudo });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        message:
-          "Une erreur s'est produite lors de la récupération du pseudo du bénévole",
-        error,
-      });
+    res.status(500).json({
+      message:
+        "Une erreur s'est produite lors de la récupération du pseudo du bénévole",
+      error,
+    });
   }
 }
 
@@ -260,12 +248,10 @@ async function getNonReferentBenevoles(req, res, next) {
     const benevoles = await Benevole.find({ referent: false, admin: false });
     res.status(200).json(benevoles);
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        error:
-          "Une erreur s'est produite lors de la récupération des bénévoles non référents",
-      });
+    res.status(500).json({
+      error:
+        "Une erreur s'est produite lors de la récupération des bénévoles non référents",
+    });
   }
 }
 
@@ -283,10 +269,9 @@ async function checkPseudoExists(req, res) {
 
 async function promoteToAdmin(req, res, next) {
   Benevole.updateOne({ _id: req.params.id }, { admin: true })
-    .then(() => res.status(200).json({ message: 'Bénévole promu admin' }))
-    .catch(error => res.status(400).json({ error }));
-};
-
+    .then(() => res.status(200).json({ message: "Bénévole promu admin" }))
+    .catch((error) => res.status(400).json({ error }));
+}
 
 module.exports = {
   signup,
@@ -299,5 +284,5 @@ module.exports = {
   deleteBenevole,
   getAllBenevoleReferent,
   checkPseudoExists,
-  promoteToAdmin
+  promoteToAdmin,
 };
