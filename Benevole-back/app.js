@@ -16,7 +16,7 @@ const flexibleRoutes = require("./routes/flexible");
 const flexibleZoneRoutes = require("./routes/flexibleZone");
 
 const corsOptions = {
-  origin: ["https://festivaldujeu.onrender.com", "http://localhost:3000"], // Ajoutez toutes les origines que vous souhaitez autoriser
+  origin: ["https://festivaldujeu.onrender.com", "http://localhost:3000", "https://festivaldujeuback.onrender.com"], // Ajoutez toutes les origines que vous souhaitez autoriser
   optionsSuccessStatus: 200, // Pour la compatibilité avec les navigateurs qui ne gèrent pas le code 204
 };
 
