@@ -567,18 +567,18 @@ exports.getJeuxByZone = async (req, res) => {
 
 exports.getZoneByBenevole = async (req, res) => {
   try {
-    const benevoleId = req.params.id; // Utilisation directe de req.params.id
+    const benevoleId = req.params.id;
+    const benevole = await Benevole.findById(benevoleId);
 
-    // Recherche des zones contenant l'ID du bénévole dans leur horaireCota
-    const zones = await ZoneBenevole.find({ "horaireCota.liste_benevole": benevoleId });
-
-    if (zones.length === 0) {
-      return res.status(404).json({ message: "Aucune zone trouvée pour ce bénévole" });
+    if (!benevole) {
+      return res.status(404).json({ message: "Bénévole non trouvé" });
     }
 
-    res.status(200).json(zones);
+    const zone = await ZoneBenevole.find({ "horaireCota.liste_benevole": benevoleId });
+
+    res.status(200).json(zone);
   } catch (error) {
-    console.error("Erreur lors de la récupération des zones:", error);
+    console.error("Erreur lors de la récupération des zones:", error); // Log de l'erreur pour le débogage
     res.status(500).json({ message: "Erreur lors de la récupération des zones", error: error.message });
   }
 };
