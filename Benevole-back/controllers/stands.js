@@ -441,10 +441,15 @@ exports.getStandsByBenevole = async (req, res) => {
       "horaireCota.liste_benevole": benevoleId,
     });
 
-    res.status(200).json(stands);
+    // Vous pouvez choisir d'envoyer un message différent si aucun stand n'est trouvé, similaire à votre autre méthode.
+    if (stands.length === 0) {
+      return res.status(200).json({ message: "Aucun stand trouvé pour ce bénévole" });
+    } else {
+      return res.status(200).json(stands);
+    }
   } catch (error) {
-    console.error("Erreur lors de la récupération des stands:", error); // Log de l'erreur pour le débogage
-    res
+    console.error("Erreur lors de la récupération des stands:", error);
+    return res
       .status(500)
       .json({
         message: "Erreur lors de la récupération des stands",
