@@ -609,13 +609,16 @@ exports.getZoneByBenevole = async (req, res) => {
       "horaireCota.liste_benevole": benevoleId,
     });
 
-    res.status(200).json(zones);
+    // Ici, nous envoyons une réponse soit avec les zones, soit avec un message indiquant qu'aucune zone n'a été trouvée.
+    // Notez que nous utilisons `return` pour s'assurer que le reste de la fonction ne s'exécute pas après l'envoi de la réponse.
     if (zones.length === 0) {
       return res.status(200).json({ message: "Aucune zone trouvée pour ce bénévole" });
+    } else {
+      return res.status(200).json(zones);
     }
   } catch (error) {
-    console.error("Erreur lors de la récupération des zones:", error); // Log de l'erreur pour le débogage
-    res
+    console.error("Erreur lors de la récupération des zones:", error);
+    return res
       .status(500)
       .json({
         message: "Erreur lors de la récupération des zones",
@@ -623,3 +626,4 @@ exports.getZoneByBenevole = async (req, res) => {
       });
   }
 };
+
