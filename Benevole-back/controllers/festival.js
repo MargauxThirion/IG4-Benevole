@@ -1,5 +1,6 @@
 const Festival = require("../models/festival");
 const Stand = require("../models/stands");
+const Benevole = require("../models/benevole");
 
 exports.createFestival = async (req, res, next) => {
   const { nom, lieu, description, date_debut, date_fin } = req.body;
@@ -14,6 +15,8 @@ exports.createFestival = async (req, res, next) => {
       date_fin,
     });
     await festival.save();
+
+    await Benevole.updateMany({}, { referent : false });
 
     // Création du premier stand pour la date de début du festival
     const standDebut = new Stand({
