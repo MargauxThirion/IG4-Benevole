@@ -596,7 +596,7 @@ exports.getJeuxByZone = async (req, res) => {
   }
 };
 
-exports.getStandsByBenevole = async (req, res) => {
+exports.getZoneByBenevole = async (req, res) => {
   try {
     const benevoleId = req.params.id;
     const benevole = await Benevole.findById(benevoleId);
@@ -605,17 +605,17 @@ exports.getStandsByBenevole = async (req, res) => {
       return res.status(404).json({ message: "Bénévole non trouvé" });
     }
 
-    const stands = await Stands.find({
+    const zones = await ZoneBenevole.find({
       "horaireCota.liste_benevole": benevoleId,
     });
 
-    res.status(200).json(stands);
+    res.status(200).json(zones);
   } catch (error) {
-    console.error("Erreur lors de la récupération des stands:", error); // Log de l'erreur pour le débogage
+    console.error("Erreur lors de la récupération des zones:", error); // Log de l'erreur pour le débogage
     res
       .status(500)
       .json({
-        message: "Erreur lors de la récupération des stands",
+        message: "Erreur lors de la récupération des zones",
         error: error.message,
       });
   }
