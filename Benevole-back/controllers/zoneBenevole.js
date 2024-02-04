@@ -610,6 +610,9 @@ exports.getZoneByBenevole = async (req, res) => {
     });
 
     res.status(200).json(zones);
+    if (zones.length === 0) {
+      return res.status(200).json({ message: "Aucune zone trouvée pour ce bénévole" });
+    }
   } catch (error) {
     console.error("Erreur lors de la récupération des zones:", error); // Log de l'erreur pour le débogage
     res
