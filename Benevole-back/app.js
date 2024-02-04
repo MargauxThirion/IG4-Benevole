@@ -37,6 +37,13 @@ app.use((req, res, next) => {
     next();
 });
 
+const corsOptions = {
+    origin: 'http://localhost:3000', // Autorise les requêtes depuis localhost:3000
+    optionsSuccessStatus: 200, // Répond avec un code 200 pour les requêtes OPTIONS préalables
+  };
+
+  app.use(cors(corsOptions));
+  
 app.use('/benevole', benevoleRoutes);
 app.use('/animation', animationRoutes);
 app.use('/jeux', jeuxRoutes);
