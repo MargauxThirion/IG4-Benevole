@@ -458,7 +458,7 @@ exports.getStandsByBenevole = async (req, res) => {
   }
 };
 
-exports.removeBenevoleFromHoraire = async (req, res, next) => {
+exports.removeBenevoleFromHoraire = async (req, res) => {
   const { idHoraire, idBenevole } = req.params;
 
   try {

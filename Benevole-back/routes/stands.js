@@ -16,6 +16,6 @@ router.put('/inscrire/:standId/:horaire/:idBenevole', standCtrl.addFlexibleToSta
 router.put('/referent/:idStand/:idBenevole', standCtrl.addReferentToStand);
 router.delete('/:id', standCtrl.deleteStand);
 router.delete('/removeReferent/:standId/:referentId', standCtrl.removeReferentFromStand);
-router.delete('/removeBenevole/:idHoraire/:idBenevole', standCtrl.removeBenevoleFromStand);
+router.delete('/removeBenevole/:idHoraire/:idBenevole', standCtrl.removeBenevoleFromHoraire);
 
 module.exports = router;
