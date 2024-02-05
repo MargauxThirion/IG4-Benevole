@@ -20,6 +20,7 @@ router.put('/inscrire/:zoneId/:horaire/:idBenevole', zoneCtrl.addFlexibleToZone)
 router.put('/referent/:idZoneBenevole/:benevoleId', zoneCtrl.addReferentToZoneBenevole);
 router.put('/:id', zoneCtrl.modifyZone);
 router.delete('/removeReferent/:idZoneBenevole/:referentId', zoneCtrl.removeReferentFromZoneBenevole);
+router.delete('/removeBenevole/:idHoraire/:idBenevole', zoneCtrl.removeBenevoleFromHoraire);
 router.delete('/:id', zoneCtrl.deleteZone);
 router.get('/:idZone/jeux', zoneCtrl.getJeuxByZone);
 

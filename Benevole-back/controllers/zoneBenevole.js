@@ -627,3 +627,54 @@ exports.getZoneByBenevole = async (req, res) => {
   }
 };
 
+exports.removeBenevoleFromHoraire = async (req, res) => {
+  const { idHoraire, idBenevole } = req.params;
+
+  try {
+    // Trouver l'horaire spécifique pour obtenir l'heure, la date et la capacité
+    const standSpecifique = await ZoneBenevole.findOne({
+      "horaireCota._id": idHoraire,
+    });
+
+    if (!standSpecifique) {
+      return res.status(404).json({ message: "Horaire non trouvé" });
+    }
+
+    const horaireSpecifique = standSpecifique.horaireCota.find(
+      (h) => h._id.toString() === idHoraire
+    );
+
+    if (!horaireSpecifique) {
+      return res
+        .status(404)
+        .json({ message: "Horaire spécifique non trouvé dans le stand" });
+    }
+
+    // Vérifier si le bénévole est inscrit à cet horaire dans le stand
+    const indexBenevole = horaireSpecifique.liste_benevole.indexOf(idBenevole);
+
+    if (indexBenevole === -1) {
+      return res.status(404).json({ message: "Bénévole non trouvé dans cet horaire" });
+    }
+
+    // Retirer le bénévole de l'horaire spécifique dans le stand actuel
+    horaireSpecifique.liste_benevole.splice(indexBenevole, 1);
+    await standSpecifique.save();
+
+    res
+      .status(200)
+      .json({
+        message: "Bénévole retiré du stand avec succès",
+        stand: standSpecifique,
+      });
+  } catch (error) {
+    console.error("Erreur lors de la désinscription du bénévole du stand", error);
+    res
+      .status(500)
+      .json({
+        error: "Une erreur s'est produite lors de la désinscription du bénévole du stand",
+      });
+  }
+};
+
+
