@@ -612,7 +612,7 @@ exports.getZoneByBenevole = async (req, res) => {
     // Ici, nous envoyons une réponse soit avec les zones, soit avec un message indiquant qu'aucune zone n'a été trouvée.
     // Notez que nous utilisons `return` pour s'assurer que le reste de la fonction ne s'exécute pas après l'envoi de la réponse.
     if (zones.length === 0) {
-      return res.status(200).json({ message: "Aucune zone trouvée pour ce bénévole" });
+      return res.status(200).json([]);
     } else {
       return res.status(200).json(zones);
     }

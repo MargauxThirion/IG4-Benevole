@@ -443,7 +443,7 @@ exports.getStandsByBenevole = async (req, res) => {
 
     // Vous pouvez choisir d'envoyer un message différent si aucun stand n'est trouvé, similaire à votre autre méthode.
     if (stands.length === 0) {
-      return res.status(200).json({ message: "Aucun stand trouvé pour ce bénévole" });
+      return res.status(200).json([]);
     } else {
       return res.status(200).json(stands);
     }
