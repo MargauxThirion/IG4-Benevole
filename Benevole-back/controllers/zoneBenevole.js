@@ -605,25 +605,63 @@ exports.getZoneByBenevole = async (req, res) => {
       return res.status(404).json({ message: "Bénévole non trouvé" });
     }
 
-    const zones = await ZoneBenevole.find({
-      "horaireCota.liste_benevole": benevoleId,
-    });
+    const zones = await ZoneBenevole.aggregate([
+      {
+        $match: {
+          "horaireCota.liste_benevole": new mongoose.Types.ObjectId(benevoleId),
+        },
+      },
+      {
+        $unwind: "$horaireCota",
+      },
+      {
+        $match: {
+          "horaireCota.liste_benevole": new mongoose.Types.ObjectId(benevoleId),
+        },
+      },
+      {
+        $lookup: {
+          from: "benevoles",
+          localField: "horaireCota.liste_benevole",
+          foreignField: "_id",
+          as: "horaireCota.liste_benevole_detail",
+        },
+      },
+      {
+        $set: {
+          "horaireCota.liste_benevole": {
+            $map: {
+              input: "$horaireCota.liste_benevole_detail",
+              as: "benevole",
+              in: { _id: "$$benevole._id", pseudo: "$$benevole.pseudo" },
+            },
+          },
+        },
+      },
+      {
+        $group: {
+          _id: "$_id",
+          nom_zone_benevole: { $first: "$nom_zone_benevole" },
+          referents: { $first: "$referents" },
+          id_zone_benevole: { $first: "$id_zone_benevole" },
+          date: { $first: "$date" },
+          liste_jeux: { $first: "$liste_jeux" },
+          horaireCota: { $push: "$horaireCota" },
+        },
+      },
+    ]);
 
-    // Ici, nous envoyons une réponse soit avec les zones, soit avec un message indiquant qu'aucune zone n'a été trouvée.
-    // Notez que nous utilisons `return` pour s'assurer que le reste de la fonction ne s'exécute pas après l'envoi de la réponse.
     if (zones.length === 0) {
-      return res.status(200).json([]);
+      return res.status(200).json({ message: "Aucune zone trouvée pour ce bénévole" });
     } else {
       return res.status(200).json(zones);
     }
   } catch (error) {
     console.error("Erreur lors de la récupération des zones:", error);
-    return res
-      .status(500)
-      .json({
-        message: "Erreur lors de la récupération des zones",
-        error: error.message,
-      });
+    return res.status(500).json({
+      message: "Erreur lors de la récupération des zones",
+      error: error.message,
+    });
   }
 };
 
