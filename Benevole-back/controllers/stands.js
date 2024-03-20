@@ -440,7 +440,7 @@ exports.getStandsByBenevole = async (req, res) => {
     const stands = await Stands.aggregate([
       {
         $match: {
-          "horaireCota.liste_benevole": mongoose.Types.ObjectId(benevoleId),
+          "horaireCota.liste_benevole": new mongoose.Types.ObjectId(benevoleId),
         },
       },
       {
@@ -448,7 +448,7 @@ exports.getStandsByBenevole = async (req, res) => {
       },
       {
         $match: {
-          "horaireCota.liste_benevole": mongoose.Types.ObjectId(benevoleId),
+          "horaireCota.liste_benevole": new mongoose.Types.ObjectId(benevoleId),
         },
       },
       {
@@ -504,7 +504,6 @@ exports.getStandsByBenevole = async (req, res) => {
     });
   }
 };
-
 
 exports.removeBenevoleFromHoraire = async (req, res) => {
   const { idHoraire, idBenevole } = req.params;
