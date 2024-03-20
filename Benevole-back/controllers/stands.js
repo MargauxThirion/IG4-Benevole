@@ -437,24 +437,62 @@ exports.getStandsByBenevole = async (req, res) => {
       return res.status(404).json({ message: "Bénévole non trouvé" });
     }
 
-    const stands = await Stands.find({
-      "horaireCota.liste_benevole": benevoleId,
-    });
+    const stands = await Stands.aggregate([
+      {
+        $match: {
+          "horaireCota.liste_benevole": new mongoose.Types.ObjectId(benevoleId),
+        },
+      },
+      {
+        $unwind: "$horaireCota",
+      },
+      {
+        $match: {
+          "horaireCota.liste_benevole": new mongoose.Types.ObjectId(benevoleId),
+        },
+      },
+      {
+        $lookup: {
+          from: "benevoles",
+          localField: "horaireCota.liste_benevole",
+          foreignField: "_id",
+          as: "horaireCota.liste_benevole_detail",
+        },
+      },
+      {
+        $set: {
+          "horaireCota.liste_benevole": {
+            $map: {
+              input: "$horaireCota.liste_benevole_detail",
+              as: "benevole",
+              in: { _id: "$$benevole._id", pseudo: "$$benevole.pseudo" },
+            },
+          },
+        },
+      },
+      {
+        $group: {
+          _id: "$_id",
+          referents: { $first: "$referents" },
+          nom_stand: { $first: "$nom_stand" },
+          description: { $first: "$description" },
+          date: { $first: "$date" },
+          horaireCota: { $push: "$horaireCota" },
+        },
+      },
+    ]);
 
-    // Vous pouvez choisir d'envoyer un message différent si aucun stand n'est trouvé, similaire à votre autre méthode.
     if (stands.length === 0) {
-      return res.status(200).json([]);
+      return res.status(200).json({ message: "Aucun stand trouvé pour ce bénévole" });
     } else {
       return res.status(200).json(stands);
     }
   } catch (error) {
     console.error("Erreur lors de la récupération des stands:", error);
-    return res
-      .status(500)
-      .json({
-        message: "Erreur lors de la récupération des stands",
-        error: error.message,
-      });
+    return res.status(500).json({
+      message: "Erreur lors de la récupération des stands",
+      error: error.message,
+    });
   }
 };
 
