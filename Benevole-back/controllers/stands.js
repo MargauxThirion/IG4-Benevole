@@ -440,7 +440,7 @@ exports.getStandsByBenevole = async (req, res) => {
     const stands = await Stands.aggregate([
       {
         $match: {
-          "horaireCota.liste_benevole": new mongoose.Types.ObjectId(benevoleId),
+          "horaireCota.liste_benevole": mongoose.Types.ObjectId(benevoleId),
         },
       },
       {
@@ -448,7 +448,7 @@ exports.getStandsByBenevole = async (req, res) => {
       },
       {
         $match: {
-          "horaireCota.liste_benevole": new mongoose.Types.ObjectId(benevoleId),
+          "horaireCota.liste_benevole": mongoose.Types.ObjectId(benevoleId),
         },
       },
       {
@@ -461,13 +461,7 @@ exports.getStandsByBenevole = async (req, res) => {
       },
       {
         $set: {
-          "horaireCota.liste_benevole": {
-            $map: {
-              input: "$horaireCota.liste_benevole_detail",
-              as: "benevole",
-              in: { _id: "$$benevole._id", pseudo: "$$benevole.pseudo" },
-            },
-          },
+          "horaireCota.liste_benevole": "$horaireCota.liste_benevole_detail",
         },
       },
       {
@@ -480,7 +474,22 @@ exports.getStandsByBenevole = async (req, res) => {
           horaireCota: { $push: "$horaireCota" },
         },
       },
+      {
+        $project: {
+          "horaireCota.liste_benevole_detail": 0, // On supprime le champ liste_benevole_detail non nécessaire
+        },
+      },
     ]);
+
+    // Cette partie transforme `liste_benevole` pour ne contenir que les ids et pseudos
+    stands.forEach(stand => {
+      stand.horaireCota.forEach(cota => {
+        cota.liste_benevole = cota.liste_benevole.map(benevole => ({
+          _id: benevole._id,
+          pseudo: benevole.pseudo,
+        }));
+      });
+    });
 
     if (stands.length === 0) {
       return res.status(200).json({ message: "Aucun stand trouvé pour ce bénévole" });
@@ -495,6 +504,7 @@ exports.getStandsByBenevole = async (req, res) => {
     });
   }
 };
+
 
 exports.removeBenevoleFromHoraire = async (req, res) => {
   const { idHoraire, idBenevole } = req.params;
